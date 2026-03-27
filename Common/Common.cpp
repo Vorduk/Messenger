@@ -3,9 +3,5 @@
 int main()
 {
     std::cout << "Hello World!\n";
-
-    while(true){
-        std::cout << "hui" <<std::endl;
-    }
 }
 

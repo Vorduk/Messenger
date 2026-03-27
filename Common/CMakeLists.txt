@@ -1,0 +1,1 @@
+auto_add_library(Common)
