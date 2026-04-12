@@ -1,11 +1,8 @@
-﻿#include <iostream>
+﻿#include "ClientConsoleUI.h"
 
-int main()
-{
-    std::cout << "Hello World!\n";
-
-    while(true){
-        std::cout << "hui" <<std::endl;
-    }
+int main() {
+    ClientConsoleUI ui;
+    ui.run();
+    return 0;
 }
 

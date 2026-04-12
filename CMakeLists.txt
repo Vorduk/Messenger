@@ -62,7 +62,6 @@ if(NOT EXISTS "${JSON_INCLUDE_DIR}/json.hpp")
     message(FATAL_ERROR "json.hpp not found in ${JSON_INCLUDE_DIR}. Please copy single_include/nlohmann/json.hpp there.")
 endif()
 
-
 function(auto_add_executable TARGET_NAME)
     file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
         "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"

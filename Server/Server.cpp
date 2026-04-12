@@ -1,7 +1,8 @@
-﻿#include <iostream>
+﻿#include "ServerConsoleUI.h"
+#include <iostream>
 
-int main()
-{
-    std::cout << "Hello World!\n";
+int main() {
+    ServerConsoleUI ui;
+    ui.run();
+    return 0;
 }
-
