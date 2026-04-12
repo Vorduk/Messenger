@@ -21,6 +21,14 @@ void ServerConsoleUI::stop() {
         m_loop_thread.join();
 }
 
+void ServerConsoleUI::showSendMessageConfirmation(const std::string& confirmation) {
+    std::cout << "[INFO]: " << confirmation << std::endl;
+}
+
+void ServerConsoleUI::showSendMessageError(const std::string& error) {
+    std::cout << "[ERROR]: " << error << std::endl;
+}
+
 void ServerConsoleUI::mainLoop() {
     while (m_is_running) {
         std::cout << "Server UI: fuck you, user!" << std::endl;
