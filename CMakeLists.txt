@@ -57,13 +57,22 @@ if(WIN32)
     add_compile_definitions(NOMINMAX)
 endif()
 
+set(JSON_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/extern/nlohmann")
+if(NOT EXISTS "${JSON_INCLUDE_DIR}/json.hpp")
+    message(FATAL_ERROR "json.hpp not found in ${JSON_INCLUDE_DIR}. Please copy single_include/nlohmann/json.hpp there.")
+endif()
+
+
 function(auto_add_executable TARGET_NAME)
     file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
         "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/*.h"
     )
     add_executable(${TARGET_NAME} ${SOURCES})
-    target_include_directories(${TARGET_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_include_directories(${TARGET_NAME} PRIVATE 
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${JSON_INCLUDE_DIR}
+    )
     target_link_libraries(${TARGET_NAME} PRIVATE Common)
     if(WIN32)
         target_link_libraries(${TARGET_NAME} PRIVATE ws2_32)
@@ -79,7 +88,10 @@ function(auto_add_library TARGET_NAME)
         "${CMAKE_CURRENT_SOURCE_DIR}/*.h"
     )
     add_library(${TARGET_NAME} STATIC ${SOURCES})
-    target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+    target_include_directories(${TARGET_NAME} PUBLIC 
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${JSON_INCLUDE_DIR}
+    )
     if(WIN32)
         target_link_libraries(${TARGET_NAME} PUBLIC ws2_32)
     endif()
@@ -102,5 +114,6 @@ if(WIN32)
 else()
     message(STATUS "Output: ${OUTPUT_BASE}")
 endif()
+message(STATUS "JSON include: ${JSON_INCLUDE_DIR}")
 message(STATUS "========================================")
 message(STATUS "")
