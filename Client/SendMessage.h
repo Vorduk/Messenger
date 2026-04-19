@@ -8,7 +8,7 @@
 class SendMessage {
 public:
     SendMessage(IMessageSender& message_sender, ISendMessagePresenter& output, std::shared_ptr<IMessageSerializer> serializer);
-    void execute(const std::string& sender_name, const std::string& text);
+    void execute(const std::string& sender, const std::string& reciever, const std::string& text);
 
 private:
     IMessageSender& m_message_sender;

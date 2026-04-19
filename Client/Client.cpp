@@ -10,7 +10,7 @@ int main() {
     ClientConsoleUI ui;
 
     // Сеть
-    MessageSender network("127.0.0.1", 8080);
+    MessageSender network("192.168.0.103", 8080);
     network.connect();  // установить соединение
 
     // Сериализатор
@@ -26,8 +26,8 @@ int main() {
     SendMessageController controller(send_message_use_case);
 
     // Привязка UI к контроллеру
-    ui.setSendMessageCallback([&controller](const std::string& sender, const std::string& text) {
-        controller.onUserSendMessage(sender, text);
+    ui.setSendMessageCallback([&controller](const std::string& sender, const std::string& reciever, const std::string& text) {
+        controller.onUserSendMessage(sender, reciever, text);
         });
 
     // Запуск UI

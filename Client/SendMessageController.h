@@ -4,7 +4,7 @@
 class SendMessageController {
 public:
     SendMessageController(SendMessage& use_case);
-    void onUserSendMessage(const std::string& sender, const std::string& text);
+    void onUserSendMessage(const std::string& sender, const std::string& reciever, const std::string& text);
 private:
     SendMessage& m_use_case;
 };

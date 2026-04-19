@@ -6,8 +6,8 @@ SendMessage::SendMessage(IMessageSender& message_sender, ISendMessagePresenter& 
 
 }
 
-void SendMessage::execute(const std::string& sender_name, const std::string& text) {
-    Message message(sender_name, text);
+void SendMessage::execute(const std::string& sender, const std::string& reciever, const std::string& text) {
+    Message message(sender, reciever, text);
     if (message.text.empty()) {
         m_output.onError("Message cannot be empty");
         return;

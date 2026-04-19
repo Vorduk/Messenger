@@ -32,7 +32,7 @@ void ClientConsoleUI::showSendMessageError(const std::string& error) {
     std::cout << "[ERROR]: " << error << std::endl;
 }
 
-void ClientConsoleUI::setSendMessageCallback(std::function<void(const std::string&, const std::string&)> callback) {
+void ClientConsoleUI::setSendMessageCallback(std::function<void(const std::string&, const std::string&, const std::string&)> callback) {
     m_send_message_callback = callback;
 }
 
@@ -43,7 +43,7 @@ void ClientConsoleUI::inputLoop() {
         if (line.empty()) continue;
         if (m_send_message_callback) {
             // Здесь можно в будущем добавить команду для выхода, например "/quit"
-            m_send_message_callback("Vorduk", line);   // Имя отправителя (позже будет логин)
+            m_send_message_callback("Vorduk", "Server", line);   // Имя отправителя (позже будет логин)
         }
     }
 }
