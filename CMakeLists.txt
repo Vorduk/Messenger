@@ -72,7 +72,7 @@ function(auto_add_executable TARGET_NAME)
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${JSON_INCLUDE_DIR}
     )
-    target_link_libraries(${TARGET_NAME} PRIVATE Common)
+    target_link_libraries(${TARGET_NAME} PRIVATE Common glew)  # Добавьте glew
     if(WIN32)
         target_link_libraries(${TARGET_NAME} PRIVATE ws2_32)
     endif()
@@ -91,6 +91,7 @@ function(auto_add_library TARGET_NAME)
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${JSON_INCLUDE_DIR}
     )
+    target_link_libraries(${TARGET_NAME} PUBLIC glew)  # Добавьте glew
     if(WIN32)
         target_link_libraries(${TARGET_NAME} PUBLIC ws2_32)
     endif()
@@ -98,6 +99,10 @@ function(auto_add_library TARGET_NAME)
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/lib"
     )
 endfunction()
+
+find_package(OpenGL REQUIRED)
+
+add_subdirectory(extern/glew)
 
 add_subdirectory(Common)
 add_subdirectory(Client)
@@ -115,5 +120,7 @@ else()
     message(STATUS "Output: ${OUTPUT_BASE}")
 endif()
 message(STATUS "JSON include: ${JSON_INCLUDE_DIR}")
+message(STATUS "OpenGL: ${OPENGL_INCLUDE_DIR}")
+message(STATUS "GLEW: ${CMAKE_CURRENT_SOURCE_DIR}/extern/glew")
 message(STATUS "========================================")
 message(STATUS "")
