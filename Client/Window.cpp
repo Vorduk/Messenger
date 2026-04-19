@@ -16,7 +16,7 @@ Window::~Window() {
 
 void Window::initGLFW() {
     if (!glfwInit())
-        throw std::runtime_error("Failed to initialize GLFW");
+        throw std::runtime_error("[Error]: Failed to initialize GLFW");
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -26,7 +26,7 @@ void Window::createWindow() {
     m_window = glfwCreateWindow(m_width, m_height, m_title.c_str(), nullptr, nullptr);
     if (!m_window) {
         glfwTerminate();
-        throw std::runtime_error("Failed to create GLFW window");
+        throw std::runtime_error("[Error]: Failed to create GLFW window");
     }
     glfwMakeContextCurrent(m_window);
     glfwSwapInterval(1);
@@ -37,7 +37,7 @@ void Window::createWindow() {
 void Window::initGLEW() {
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK) {
-        throw std::runtime_error("Failed to initialize GLEW");
+        throw std::runtime_error("[Error]: Failed to initialize GLEW");
     }
 
     glViewport(0, 0, m_width, m_height);

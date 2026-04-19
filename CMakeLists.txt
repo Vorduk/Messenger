@@ -72,8 +72,7 @@ function(auto_add_executable TARGET_NAME)
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${JSON_INCLUDE_DIR}
     )
-    target_link_libraries(${TARGET_NAME} PRIVATE Common glew glfw imgui)
-    target_link_libraries(${TARGET_NAME} PRIVATE Common glew glfw)
+    target_link_libraries(${TARGET_NAME} PRIVATE Common glew glfw imgui spdlog)
     target_compile_definitions(Client PRIVATE GLEW_STATIC)
     if(WIN32)
         target_link_libraries(${TARGET_NAME} PRIVATE ws2_32)
@@ -93,8 +92,7 @@ function(auto_add_library TARGET_NAME)
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${JSON_INCLUDE_DIR}
     )
-    target_link_libraries(${TARGET_NAME} PUBLIC glew glfw imgui)
-    target_link_libraries(${TARGET_NAME} PUBLIC glew glfw)
+    target_link_libraries(${TARGET_NAME} PUBLIC glew glfw imgui spdlog)
     if(WIN32)
         target_link_libraries(${TARGET_NAME} PUBLIC ws2_32)
     endif()
@@ -119,6 +117,7 @@ add_subdirectory(Common)
 add_subdirectory(Client)
 add_subdirectory(Server)
 add_subdirectory(extern/sqlite)
+add_subdirectory(extern/spdlog)
 
 message(STATUS "")
 message(STATUS "========================================")

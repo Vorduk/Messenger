@@ -5,6 +5,13 @@
 #include <string>
 #include <stdexcept>
 
+/**
+ * @brief Minimal RAII wrapper for a GLFW window with an OpenGL context.
+ *
+ * Creates and manages a GLFW window, initializes GLEW, and provides
+ * basic frame operations (polling events, swapping buffers).
+ * Non-copyable.
+ */
 class Window {
 public:
     Window(int width, int height, const std::string& title);
@@ -19,10 +26,12 @@ public:
     GLFWwindow* getHandle() const { return m_window; }
 
 private:
+    // Window params
     GLFWwindow* m_window = nullptr;
     int m_width, m_height;
     std::string m_title;
 
+    // Initializers
     void initGLFW();
     void createWindow();
     void initGLEW();
