@@ -10,7 +10,7 @@ int main() {
     ClientConsoleUI ui;
 
     // Сеть
-    MessageSender network("192.168.0.103", 8080);
+    MessageSender network("192.168.0.107", 8080);
     network.connect();  // установить соединение
 
     // Сериализатор
