@@ -1,4 +1,4 @@
-﻿#include "ClientConsoleUI.h"
+﻿#include "MessengerWindow.h"
 #include "MessageSender.h"
 #include "SendMessage.h"
 #include "SendMessagePresenter.h"
@@ -7,7 +7,7 @@
 
 int main() {
     // UI
-    ClientConsoleUI ui;
+    MessengerWindow ui(1280, 720, "Messenger Client");
 
     // Сеть
     MessageSender network("192.168.0.107", 8080);
