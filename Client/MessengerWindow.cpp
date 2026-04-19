@@ -60,14 +60,38 @@ void MessengerWindow::setSendMessageCallback(
 }
 
 void MessengerWindow::renderUI() {
+
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(viewport->WorkPos);
+    ImGui::SetNextWindowSize(viewport->WorkSize);
+    ImGui::SetNextWindowViewport(viewport->ID);
+
+    ImGuiWindowFlags dockspace_flags =
+        ImGuiWindowFlags_NoDocking |
+        ImGuiWindowFlags_NoTitleBar |
+        ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoBringToFrontOnFocus |
+        ImGuiWindowFlags_NoNavFocus;
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+    ImGui::Begin("DockSpace", nullptr, dockspace_flags);
+    ImGui::PopStyleVar(3);
+
+    ImGuiID dockspace_id = ImGui::GetID("MainDockSpace");
+    ImGui::DockSpace(dockspace_id);
+
+
     ImGui::Begin("Messenger");
 
-    // Поле ввода сообщения
     ImGui::InputText("Message", m_inputBuffer, IM_ARRAYSIZE(m_inputBuffer));
 
     if (ImGui::Button("Send")) {
         if (m_sendCallback && strlen(m_inputBuffer) > 0) {
-            // Здесь можно заменить "User" и "Server" на реальные значения
             m_sendCallback("User", "Server", m_inputBuffer);
             memset(m_inputBuffer, 0, sizeof(m_inputBuffer));
         }
@@ -75,7 +99,6 @@ void MessengerWindow::renderUI() {
 
     ImGui::Separator();
 
-    // Область вывода статусных сообщений (подтверждения/ошибки)
     ImGui::Text("Status:");
     {
         std::lock_guard<std::mutex> lock(m_messagesMutex);
@@ -89,5 +112,7 @@ void MessengerWindow::renderUI() {
         }
     }
 
-    ImGui::End();
+    ImGui::End(); // Messenger
+
+    ImGui::End(); // DockSpace
 }

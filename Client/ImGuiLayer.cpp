@@ -7,7 +7,7 @@ ImGuiLayer::ImGuiLayer(Window& window) : m_window(window) {
     ImGuiIO& io = ImGui::GetIO();                           // Get io structure.
     //io.IniFilename = nullptr;                             // Do not save window parameters for restart
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;   // Enable keyboard navigation.
-    //io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;     // Enable docking.
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;       // Enable docking.
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;     // Enable multiple windows.
     
     ImGui::StyleColorsDark();   // Dark theme for default.
