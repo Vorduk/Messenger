@@ -72,7 +72,7 @@ function(auto_add_executable TARGET_NAME)
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${JSON_INCLUDE_DIR}
     )
-    # Линкуем Common, glew, glfw и OpenGL
+    target_link_libraries(${TARGET_NAME} PRIVATE Common glew glfw imgui)
     target_link_libraries(${TARGET_NAME} PRIVATE Common glew glfw)
     if(WIN32)
         target_link_libraries(${TARGET_NAME} PRIVATE ws2_32)
@@ -92,7 +92,7 @@ function(auto_add_library TARGET_NAME)
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${JSON_INCLUDE_DIR}
     )
-    # Публичная линковка glew и glfw
+    target_link_libraries(${TARGET_NAME} PUBLIC glew glfw imgui)
     target_link_libraries(${TARGET_NAME} PUBLIC glew glfw)
     if(WIN32)
         target_link_libraries(${TARGET_NAME} PUBLIC ws2_32)
@@ -112,6 +112,7 @@ set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 
 add_subdirectory(extern/glfw)
+add_subdirectory(extern/imgui)
 
 add_subdirectory(Common)
 add_subdirectory(Client)
