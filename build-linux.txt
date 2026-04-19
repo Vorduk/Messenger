@@ -1,0 +1,5 @@
+mkdir build && cd build
+sudo apt update
+sudo apt install libgl1-mesa-dev libglu1-mesa-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
+cmake ..
+make -j$(nproc)
