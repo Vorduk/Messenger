@@ -102,6 +102,7 @@ endfunction()
 add_subdirectory(Common)
 add_subdirectory(Client)
 add_subdirectory(Server)
+add_subdirectory(extern/sqlite)
 
 message(STATUS "")
 message(STATUS "========================================")

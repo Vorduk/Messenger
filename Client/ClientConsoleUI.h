@@ -4,6 +4,10 @@
 #include <thread>
 #include <functional>
 
+// Test
+#include <sqlite3.h>
+#include <iostream>
+
 class ClientConsoleUI : public IUI {
 public:
     ClientConsoleUI();
@@ -15,6 +19,19 @@ public:
     virtual void showSendMessageError(const std::string& error) override;
 
     void setSendMessageCallback(std::function<void(const std::string&, const std::string&, const std::string&)> callback);
+
+    // Test
+    void testSQLite() {
+        sqlite3* db;
+        int rc = sqlite3_open("test.db", &db);
+        if (rc == SQLITE_OK) {
+            std::cout << "SQLite version: " << sqlite3_libversion() << std::endl;
+            sqlite3_close(db);
+        }
+        else {
+            std::cerr << "Can't open database: " << sqlite3_errmsg(db) << std::endl;
+        }
+    }
 
 private:
     void mainLoop();
