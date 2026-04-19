@@ -1,12 +1,12 @@
-#include "SendMessage.h"
+#include "SendMessageUseCase.h"
 
-SendMessage::SendMessage(IMessageSender& message_sender, ISendMessagePresenter& output, std::shared_ptr<IMessageSerializer> serializer) :
+SendMessageUseCase::SendMessageUseCase(IMessageSender& message_sender, ISendMessagePresenter& output, std::shared_ptr<IMessageSerializer> serializer) :
     m_message_sender(message_sender), m_output(output), m_serializer(serializer)
 {
 
 }
 
-void SendMessage::execute(const std::string& sender, const std::string& reciever, const std::string& text) {
+void SendMessageUseCase::execute(const std::string& sender, const std::string& reciever, const std::string& text) {
     Message message(sender, reciever, text);
     if (message.text.empty()) {
         m_output.onError("Message cannot be empty");

@@ -1,6 +1,6 @@
 #include "SendMessageController.h"
 
-SendMessageController::SendMessageController(SendMessage& use_case)
+SendMessageController::SendMessageController(SendMessageUseCase& use_case)
     : m_use_case(use_case) {
 }
 

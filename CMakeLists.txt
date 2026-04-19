@@ -24,6 +24,15 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+if(MSVC)
+    add_compile_options(/utf-8)
+    add_compile_options(/W0 /wd4996 /wd4244 /wd4267)
+endif()
+
+if(MINGW OR CMAKE_COMPILER_IS_GNUCXX)
+    add_compile_options(-Wall -Wextra)
+endif()
+
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type" FORCE)
 endif()

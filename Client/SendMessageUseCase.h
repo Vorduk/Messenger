@@ -5,9 +5,9 @@
 #include "IMessageSerializer.h"
 #include <memory>
 
-class SendMessage {
+class SendMessageUseCase {
 public:
-    SendMessage(IMessageSender& message_sender, ISendMessagePresenter& output, std::shared_ptr<IMessageSerializer> serializer);
+    SendMessageUseCase(IMessageSender& message_sender, ISendMessagePresenter& output, std::shared_ptr<IMessageSerializer> serializer);
     void execute(const std::string& sender, const std::string& reciever, const std::string& text);
 
 private:

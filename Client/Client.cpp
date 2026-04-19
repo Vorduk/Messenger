@@ -1,11 +1,19 @@
-﻿#include "MessengerWindow.h"
+﻿#include "Logger.h"
+#include "MessengerWindow.h"
 #include "MessageSender.h"
-#include "SendMessage.h"
+#include "SendMessageUseCase.h"
 #include "SendMessagePresenter.h"
 #include "SendMessageController.h"
 #include "JsonMessageSerializer.h"
+#include "Message.h"
 
 int main() {
+
+    Logger::getInstance().initialize("messenger.log");
+    Logger::getInstance().setShowFileInfo(false);
+    Logger::getInstance().setShowLevelPrefix(true);
+    Logger::getInstance().setMinimalLevel(Logger::Level::Info);
+
     // UI
     MessengerWindow ui(1280, 720, "Messenger Client");
 
@@ -20,7 +28,7 @@ int main() {
     SendMessagePresenter presenter(ui);
 
     // Use case
-    SendMessage send_message_use_case(network, presenter, serializer);
+    SendMessageUseCase send_message_use_case(network, presenter, serializer);
 
     // Контроллер
     SendMessageController controller(send_message_use_case);
