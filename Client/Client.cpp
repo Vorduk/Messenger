@@ -17,7 +17,7 @@ int main() {
 
     // Network
     MessageSender network("192.168.0.107", 8080);
-    network.connect();  // установить соединение
+    //network.connect();  // установить соединение
 
     // Serializer
     std::shared_ptr<JsonMessageSerializer> serializer = std::make_shared<JsonMessageSerializer>();

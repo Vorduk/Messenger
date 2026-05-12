@@ -24,7 +24,7 @@ MessengerWindow::MessengerWindow(int width, int height, const std::string& title
         ImGui::Separator();
         ImGui::Text("Status:");
         {
-            std::lock_guard<std::mutex> lock(m_messagesMutex);
+            std::lock_guard<std::mutex> lock(m_messages_mutex);
             for (const auto& msg : m_messages) {
                 if (msg.type == UIMessage::Error) {
                     ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "[ERROR] %s", msg.text.c_str());
@@ -35,6 +35,7 @@ MessengerWindow::MessengerWindow(int width, int height, const std::string& title
             }
         }
         });
+
     m_dock_manager.RegisterWindow("Chat List", [this]() {
 
         ImGui::Text("Chat List placeholder");
@@ -71,7 +72,7 @@ void MessengerWindow::stop() {
 }
 
 void MessengerWindow::showSendMessageConfirmation(const std::string& confirmation) {
-    std::lock_guard<std::mutex> lock(m_messagesMutex);
+    std::lock_guard<std::mutex> lock(m_messages_mutex);
     m_messages.push_back({ UIMessage::Info, confirmation });
     if (m_messages.size() > 20) {
         m_messages.erase(m_messages.begin());
@@ -79,7 +80,7 @@ void MessengerWindow::showSendMessageConfirmation(const std::string& confirmatio
 }
 
 void MessengerWindow::showSendMessageError(const std::string& error) {
-    std::lock_guard<std::mutex> lock(m_messagesMutex);
+    std::lock_guard<std::mutex> lock(m_messages_mutex);
     m_messages.push_back({ UIMessage::Error, error });
     if (m_messages.size() > 20) {
         m_messages.erase(m_messages.begin());

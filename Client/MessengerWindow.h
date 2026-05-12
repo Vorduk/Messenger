@@ -45,7 +45,7 @@ private:
     };
 
     std::vector<UIMessage> m_messages;
-    std::mutex m_messagesMutex;
+    std::mutex m_messages_mutex;
 
     DockManager m_dock_manager;
 };
