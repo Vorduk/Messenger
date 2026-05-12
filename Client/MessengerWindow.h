@@ -2,6 +2,7 @@
 #include "IUI.h"
 #include "Window.h"
 #include "ImGuiLayer.h"
+#include "DockManager.h"
 #include <atomic>
 #include <functional>
 #include <mutex>
@@ -45,4 +46,6 @@ private:
 
     std::vector<UIMessage> m_messages;
     std::mutex m_messagesMutex;
+
+    DockManager m_dock_manager;
 };
