@@ -6,16 +6,14 @@
 #include <string>
 
 /**
- * @class Logger
- * @brief Thread-safe singleton wrapper around spdlog for application-wide logging.
- *
+ * Thread-safe singleton wrapper around spdlog for application-wide logging.
  * Supports colored console output (green for info, yellow for warnings, red for errors),
  * simultaneous file logging, and configurable prefixes (file/line/function and level tags).
  */
 class Logger {
 public:
 
-    /// Log severity levels matching spdlog's levels.
+    // Log severity levels matching spdlog's levels.
     enum class Level {
         Trace,
         Debug,
@@ -26,26 +24,25 @@ public:
     };
     
     /**
-     * @brief Returns the singleton instance of the logger.
-     * @return Reference to the Logger instance.
+     * Returns the singleton instance of the logger.
      */
     static Logger& getInstance();
 
     /**
-     * @brief Initializes the logger with console and file sinks.
-     * @param logFileName Name of the log file (default: "messenger.log").
+     * Initializes the logger with console and file sinks.
+     * logFileName - Name of the log file (default: "messenger.log").
      */
     void initialize(const std::string& log_file_name = "messenger.log");
 
     /**
-     * @brief Sets the minimum severity level to be logged.
-     * @param level Minimum level (messages below this level are ignored).
+     * Sets the minimum severity level to be logged.
+     * level - Minimum level (messages below this level are ignored).
      */
     void setMinimalLevel(Level level);
 
     /**
-     * @brief Sets a custom format pattern for log messages.
-     * @param pattern spdlog pattern string (e.g., "[%Y-%m-%d %H:%M:%S.%e] [%l] %v").
+     * Sets a custom format pattern for log messages.
+     * pattern - spdlog pattern string (e.g., "[%Y-%m-%d %H:%M:%S.%e] [%l] %v").
      */
     void setPattern(const std::string& pattern);
 
@@ -116,7 +113,7 @@ private:
         }
     }
 
-    /// Extracts the base filename from a full path.
+    // Extracts the base filename from a full path.
     static const char* extractFileName(const char* path) {
         const char* lastSlash = strrchr(path, '/');
         const char* lastBackslash = strrchr(path, '\\');

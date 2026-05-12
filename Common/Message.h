@@ -3,9 +3,6 @@
 #include <chrono>
 
 /**
- * @struct Message
- * 
- * @brief
  * Includes information:
  * - message sender
  * - message reciever

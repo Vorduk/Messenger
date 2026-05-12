@@ -28,7 +28,7 @@ public:
 private:
     void renderUI();
 
-    Window m_window;                //< Glfw Window
+    Window m_window; // Glfw Window
     ImGuiLayer m_imgui_layer;
     std::atomic<bool> m_running;
 
