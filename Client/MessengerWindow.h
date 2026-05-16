@@ -3,11 +3,9 @@
 #include "Window.h"
 #include "ImGuiLayer.h"
 #include "DockManager.h"
-#include <atomic>
-#include <functional>
-#include <mutex>
-#include <string>
-#include <vector>
+#include "ChatWindow.h"
+#include "ChatListWindow.h"
+#include <memory>
 
 class MessengerWindow : public IUI {
 public:
@@ -20,32 +18,15 @@ public:
 
     void showSendMessageConfirmation(const std::string& confirmation) override;
     void showSendMessageError(const std::string& error) override;
-
-    void setSendMessageCallback(
-        std::function<void(const std::string& sender,
-            const std::string& receiver,
-            const std::string& text)> callback);
+    void setSendMessageHandler(ISendMessageHandler* handler);
 
 private:
     void renderUI();
 
     Window m_window; // Glfw Window
     ImGuiLayer m_imgui_layer;
-    std::atomic<bool> m_running;
-
-    char m_inputBuffer[1024] = "";
-
-    std::function<void(const std::string&, const std::string&, const std::string&)>
-        m_sendCallback;
-
-    struct UIMessage {
-        enum Type { Info, Error };
-        Type type;
-        std::string text;
-    };
-
-    std::vector<UIMessage> m_messages;
-    std::mutex m_messages_mutex;
-
+    std::atomic<bool> m_running{false};
     DockManager m_dock_manager;
+    std::unique_ptr<ChatWindow> m_chat_window;
+    std::unique_ptr<ChatListWindow> m_chat_list_window;
 };

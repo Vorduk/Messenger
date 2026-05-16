@@ -34,10 +34,7 @@ int main() {
     // Controller
     SendMessageController controller(send_message_use_case);
 
-    // Bind ui to controller
-    ui.setSendMessageCallback([&controller](const std::string& sender, const std::string& reciever, const std::string& text) {
-        controller.onUserSendMessage(sender, reciever, text);
-        });
+    ui.setSendMessageHandler(&controller);
 
     // Запуск UI
     ui.run();

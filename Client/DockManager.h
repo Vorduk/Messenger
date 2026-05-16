@@ -1,5 +1,6 @@
 #pragma once
 #include "imgui.h"
+#include "IDockableWindow.h"
 #include <functional>
 #include <string>
 #include <vector>
@@ -74,7 +75,7 @@ public:
      * @param name  Unique window title (used for docking identification).
      * @param func  Callback that renders the window's contents.
      */
-    void RegisterWindow(const std::string& name, WindowRenderFunc func);
+    void RegisterWindow(IDockableWindow* window);
 
     /**
      * @brief Provide a default layout tree that is applied only on the very
@@ -110,12 +111,7 @@ private:
      */
     void ApplyInitialLayout(ImGuiID dockspace_id);
 
-    /// Internal bookkeeping for a single registered window.
-    struct WindowInfo {
-        std::string name;
-        WindowRenderFunc render;
-    };
-    std::vector<WindowInfo> m_windows;  ///< All registered windows.
+    std::vector<IDockableWindow*> m_windows;  ///< All registered windows.
     DockLayoutNode m_initial_layout;    ///< Default layout (used once).
     bool m_initial_layout_set = false;  ///< Whether a default layout was provided.
     bool m_first_frame = true;          ///< True until the first Begin() completes.

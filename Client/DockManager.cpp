@@ -8,9 +8,9 @@ DockManager::DockManager() {
         ImGui::GetIO().IniFilename = "imgui.ini";
 }
 
-void DockManager::RegisterWindow(const std::string& name, WindowRenderFunc func) {
-    // Store the window name and its content-drawing callback.
-    m_windows.push_back({ name, std::move(func) });
+void DockManager::RegisterWindow(IDockableWindow* window) {
+    // Store the window.
+    m_windows.push_back(window);
 }
 
 void DockManager::SetInitialLayout(DockLayoutNode root) {
@@ -101,9 +101,9 @@ void DockManager::Begin() {
 
 void DockManager::RenderWindows() {
     // Draw each registered window – ImGui will automatically dock them
-    for (WindowInfo& win : m_windows) {
-        ImGui::Begin(win.name.c_str());
-        win.render(); // Call the user-provided content function
+    for (IDockableWindow* win : m_windows) {
+        ImGui::Begin(win->getName());
+        win->Render();
         ImGui::End();
     }
 }
