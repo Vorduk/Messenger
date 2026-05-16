@@ -28,6 +28,6 @@ public:
     virtual std::vector<Message> getUnreadMessages(const std::string& user_id) = 0;
 
     // Cache management.
-    virtual void setMaxCachedMessages(int max_messages) = 0;
+    virtual void setMaxCachedMessages(int max_cached_messages) = 0;
     virtual void pruneOldMessages() = 0; // Remove messages beyond the limit
 };

@@ -44,13 +44,10 @@ void Window::createWindow() {
 
 void Window::initGLEW() {
     glewExperimental = GL_TRUE;
-    if (glewInit() != GLEW_OK) {
-        throw std::runtime_error("[Error]: Failed to initialize GLEW");
-    }
-    GLenum err = glewInit();
-    if (err != GLEW_OK) {
+    GLenum error = glewInit();
+    if (error != GLEW_OK) {
         std::stringstream ss;
-        ss << "Failed to initialize GLEW: " << glewGetErrorString(err);
+        ss << "Failed to initialize GLEW: " << glewGetErrorString(error);
         LOG_ERROR(ss.str());
         throw std::runtime_error(ss.str());
     }
