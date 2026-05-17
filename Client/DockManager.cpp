@@ -1,6 +1,7 @@
 #include "DockManager.h"
 #include "imgui_internal.h"
 #include <fstream>
+#include <functional>
 
 DockManager::DockManager() {
     // Ensure ImGui saves/loads layout to an .ini file.
@@ -8,54 +9,33 @@ DockManager::DockManager() {
         ImGui::GetIO().IniFilename = "imgui.ini";
 }
 
-void DockManager::RegisterWindow(IDockableWindow* window) {
-    // Store the window.
-    m_windows.push_back(window);
+void DockManager::addWindow(IDockableWindow* window) {
+    // Store the window pointer keyed by its unique name.
+    m_windows[window->getName()] = window;
+    m_layout_valid = false; // Layout must be rebuilt to include the new window.
 }
 
-void DockManager::SetInitialLayout(DockLayoutNode root) {
-    // Save the default layout tree; applied only on first launch.
-    m_initial_layout = std::move(root);
-    m_initial_layout_set = true;
+void DockManager::removeWindow(const std::string& name) {
+    // Remove the window entry; it will no longer be rendered.
+    m_windows.erase(name);
+    m_layout_valid = false; // Layout must be rebuilt without this window.
 }
 
-static void BuildDockNode(ImGuiID node_id, const DockLayoutNode& layout) {
-    if (layout.type == DockLayoutNode::Window) {
-        // Leaf: dock a named window into this node.
-        ImGui::DockBuilderDockWindow(layout.window_name.c_str(), node_id);
-    }
-    else if (layout.type == DockLayoutNode::Split) {
-        // Split the node into two children and recurse.
-        ImGuiID child1_id, child2_id;
-        ImGui::DockBuilderSplitNode(node_id, layout.split_dir, layout.split_ratio,
-            &child1_id, &child2_id);
-        BuildDockNode(child1_id, *layout.child1);
-        BuildDockNode(child2_id, *layout.child2);
-    }
+void DockManager::setCurrentLayout(DockLayoutNode layout) {
+    // Save the new layout tree; mark as needing rebuild.
+    m_current_layout = std::move(layout);
+    m_has_layout = true;
+    m_layout_valid = false;
 }
 
-void DockManager::ApplyInitialLayout(ImGuiID dockspace_id) {
-    // Wipe any existing layout and create a fresh dockspace node.
-    ImGui::DockBuilderRemoveNode(dockspace_id);
-    ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
-    ImGui::DockBuilderSetNodeSize(dockspace_id, ImGui::GetMainViewport()->WorkSize);
-
-    // Build the whole window hierarchy inside the dockspace.
-    BuildDockNode(dockspace_id, m_initial_layout);
-
-    // Finalize the docking layout.
-    ImGui::DockBuilderFinish(dockspace_id);
-}
-
-void DockManager::Begin() {
-
+void DockManager::begin() {
     // Make the dockspace window cover the entire usable viewport area.
     ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->WorkPos);
     ImGui::SetNextWindowSize(viewport->WorkSize);
     ImGui::SetNextWindowViewport(viewport->ID);
 
-    // Flags.
+    // Flags: no decorations, just a container for the docking area.
     ImGuiWindowFlags dockspace_flags =
         ImGuiWindowFlags_NoDocking |
         ImGuiWindowFlags_NoTitleBar |
@@ -76,38 +56,68 @@ void DockManager::Begin() {
     ImGuiID dockspace_id = ImGui::GetID("MainDockSpace");
     ImGui::DockSpace(dockspace_id);
 
-    // On the very first frame, decide whether to apply the default layout
+    // On the very first frame, decide whether to restore saved layout or apply current.
     if (m_first_frame) {
         m_first_frame = false;
-        bool needInitialLayout = true;
-
-        // Check if a saved .ini file already exists and has content
-        const char* iniFile = ImGui::GetIO().IniFilename;
-        if (iniFile && *iniFile) {
-            std::ifstream file(iniFile, std::ios::binary | std::ios::ate);
-            if (file.good()) {
-                // File exists and has more than a minimal size -> saved layout present
-                if (file.tellg() > 2)
-                    needInitialLayout = false;
-            }
+        if (!hasIniFile() && m_has_layout) {
+            m_layout_valid = false;
         }
+    }
 
-        // Apply default layout only when there is no saved state
-        if (needInitialLayout && m_initial_layout_set) {
-            ApplyInitialLayout(dockspace_id);
-        }
+    // If the layout is marked invalid and we have a layout + windows, rebuild now.
+    if (!m_layout_valid && m_has_layout && !m_windows.empty()) {
+        applyLayout(dockspace_id, m_current_layout);
+        m_layout_valid = true;
     }
 }
 
-void DockManager::RenderWindows() {
-    // Draw each registered window – ImGui will automatically dock them
-    for (IDockableWindow* win : m_windows) {
-        ImGui::Begin(win->getName());
-        win->Render();
+void DockManager::renderWindows() {
+    // Draw each registered window – ImGui will automatically dock them.
+    for (const auto& [name, window] : m_windows) {
+        ImGui::Begin(name.c_str());
+        window->Render();
         ImGui::End();
     }
 }
 
-void DockManager::End() {
-    ImGui::End(); // Close the dockspace container window
+void DockManager::end() {
+    ImGui::End(); // Close the dockspace container window.
+}
+
+
+
+void DockManager::applyLayout(ImGuiID dockspace_id, const DockLayoutNode& layout) {
+    // Wipe any existing layout and create a fresh dockspace node.
+    ImGui::DockBuilderRemoveNode(dockspace_id);
+    ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
+    ImGui::DockBuilderSetNodeSize(dockspace_id, ImGui::GetMainViewport()->WorkSize);
+
+    // Recursively build the node tree.
+    std::function<void(ImGuiID, const DockLayoutNode&)> build_node;
+    build_node = [&](ImGuiID node_id, const DockLayoutNode& node) {
+        if (node.type == DockLayoutNode::Window) {
+            // Leaf: dock a named window into this node.
+            ImGui::DockBuilderDockWindow(node.window_name.c_str(), node_id);
+        }
+        else if (node.type == DockLayoutNode::Split) {
+            // Split the node into two children and recurse.
+            ImGuiID child1_id, child2_id;
+            ImGui::DockBuilderSplitNode(node_id, node.split_dir, node.split_ratio,
+                &child1_id, &child2_id);
+            build_node(child1_id, *node.child1);
+            build_node(child2_id, *node.child2);
+        }
+        };
+    build_node(dockspace_id, layout);
+
+    // Finalize the docking layout.
+    ImGui::DockBuilderFinish(dockspace_id);
+}
+
+bool DockManager::hasIniFile() const {
+    const char* ini_file = ImGui::GetIO().IniFilename;
+    if (!ini_file || !*ini_file) return false;
+    std::ifstream file(ini_file, std::ios::binary | std::ios::ate);
+    // File exists and has more than a minimal size -> saved layout present.
+    return file.good() && file.tellg() > 2;
 }

@@ -3,20 +3,18 @@
 #include "IDockableWindow.h"
 #include <functional>
 #include <string>
-#include <vector>
+#include <unordered_map>
 #include <memory>
 
 /**
- * @brief Describes a single node in the initial docking layout tree.
- *
+ * @brief Describes a single node in the docking layout tree.
  * Can be either a leaf window or a split container with two children.
  */
 struct DockLayoutNode {
-    /// Type of the node: leaf window or directional split.
-    enum Type { Window, Split };
+    enum Type { Window, Split };            ///< Type of the node: leaf window or directional split.
     Type type;                              ///< Node type.
-    std::string window_name;                ///< Window title for leaf nodes.
-    ImGuiDir split_dir = ImGuiDir_Left;     ///< Split direction (used when type == Split).
+    std::string window_name;                ///< Window title.
+    ImGuiDir split_dir = ImGuiDir_Left;     ///< Split direction.
     float split_ratio = 0.5f;               ///< Ratio of the split (0.0 – 1.0).
     std::unique_ptr<DockLayoutNode> child1; ///< First child (top/left).
     std::unique_ptr<DockLayoutNode> child2; ///< Second child (bottom/right).
@@ -26,7 +24,7 @@ struct DockLayoutNode {
      * @param name Window title string.
      * @return DockLayoutNode configured as a Window leaf.
      */
-    static DockLayoutNode MakeWindow(const char* name) {
+    static DockLayoutNode makeWindow(const char* name) {
         DockLayoutNode node;
         node.type = Window;
         node.window_name = name;
@@ -41,7 +39,8 @@ struct DockLayoutNode {
      * @param c2  Second child node.
      * @return DockLayoutNode configured as a Split node.
      */
-    static DockLayoutNode MakeSplit(ImGuiDir dir, float ratio, DockLayoutNode c1, DockLayoutNode c2) {
+    static DockLayoutNode makeSplit(ImGuiDir dir, float ratio,
+        DockLayoutNode c1, DockLayoutNode c2) {
         DockLayoutNode node;
         node.type = Split;
         node.split_dir = dir;
@@ -55,64 +54,76 @@ struct DockLayoutNode {
 /**
  * @brief Manages a full-window docking space with registered windows.
  *
- * Handles the creation of the main dockspace, optional initial layout,
- * per-frame rendering of registered windows, and automatic save/restore
- * of the layout via the ImGui .ini file.
+ * Handles the creation of the main dockspace, dynamic addition/removal
+ * of windows, per-frame rendering, and automatic save/restore of the
+ * layout via the ImGui .ini file.
  */
 class DockManager {
 public:
-
-    /// Callback type for a window's content rendering function.
-    using WindowRenderFunc = std::function<void()>;
-
     /**
      * @brief Constructor. Configures the ImGui .ini filename if not already set.
      */
     DockManager();
 
     /**
-     * @brief Register a window to be rendered every frame inside the dockspace.
-     * @param name  Unique window title (used for docking identification).
-     * @param func  Callback that renders the window's contents.
+     * @brief Add a window to be rendered every frame inside the dockspace.
+     * @param window Pointer to the dockable window (ownership remains outside).
      */
-    void RegisterWindow(IDockableWindow* window);
+    void addWindow(IDockableWindow* window);
 
     /**
-     * @brief Provide a default layout tree that is applied only on the very
-     * first launch (when no .ini file exists yet).
-     * @param root Root node of the desired initial layout.
+     * @brief Remove a previously added window by its unique name.
+     * @param name The window's title (as returned by GetName()).
      */
-    void SetInitialLayout(DockLayoutNode root);
+    void removeWindow(const std::string& name);
+
+    /**
+     * @brief Set the docking layout to be applied in the current frame.
+     *
+     * The layout is applied immediately on the next Begin() call,
+     * regardless of any previously saved .ini state.
+     *
+     * @param layout Root node of the desired layout.
+     */
+    void setCurrentLayout(DockLayoutNode layout);
+
 
     //////////// Call every frame in UI ////////////
 
     /**
      * @brief Must be called at the beginning of the UI frame.
-     * Creates the dockspace window and applies the initial layout if necessary.
+     * Creates the dockspace window and applies the current layout if necessary.
      */
-    void Begin();
+    void begin();
 
     /**
-     * @brief Renders all previously registered windows.
-     * Call this between Begin() and End().
+     * @brief Renders all currently added windows.
+     * Call this between begin() and end().
      */
-    void RenderWindows();
+    void renderWindows();
 
     /**
      * @brief Must be called at the end of the UI frame. Closes the dockspace window.
      */
-    void End();
+    void end();
 
 private:
+    /**
+     * @brief Recursively build the docking node hierarchy.
+     * @param dockspace_id The ImGui ID of the root dockspace node.
+     * @param layout       The layout tree to apply.
+     */
+    void applyLayout(ImGuiID dockspace_id, const DockLayoutNode& layout);
 
     /**
-     * @brief Build the full node hierarchy starting from an empty dockspace.
-     * @param dockspace_id The ImGui ID of the root dockspace node.
+     * @brief Check if a saved .ini file already exists and has content.
+     * @return true if a non-empty ini file is present.
      */
-    void ApplyInitialLayout(ImGuiID dockspace_id);
+    bool hasIniFile() const;
 
-    std::vector<IDockableWindow*> m_windows;  ///< All registered windows.
-    DockLayoutNode m_initial_layout;    ///< Default layout (used once).
-    bool m_initial_layout_set = false;  ///< Whether a default layout was provided.
-    bool m_first_frame = true;          ///< True until the first Begin() completes.
+    std::unordered_map<std::string, IDockableWindow*> m_windows; ///< Active windows by name.
+    DockLayoutNode m_current_layout;     ///< Layout to apply when needed.
+    bool m_layout_valid = false;         ///< Whether the current layout matches the windows.
+    bool m_first_frame = true;           ///< True until the first begin() completes.
+    bool m_has_layout = false;
 };
