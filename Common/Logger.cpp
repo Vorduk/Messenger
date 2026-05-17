@@ -9,15 +9,23 @@ Logger& Logger::getInstance() {
 }
 
 void Logger::initialize(const std::string& log_file_name) {
-    try {  
-        std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();    // Create console sink with colors.  
-        console_sink->set_level(spdlog::level::trace);  // Level of output, above selected.
+    try {
+        std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+        console_sink->set_level(spdlog::level::trace);
 
-        // Colors for different levels.
-        console_sink->set_color(spdlog::level::info, FOREGROUND_GREEN);                             // Green.
-        console_sink->set_color(spdlog::level::warn, FOREGROUND_RED | FOREGROUND_GREEN);            // Yellow.
-        console_sink->set_color(spdlog::level::err, FOREGROUND_RED);                                // Red.
-        console_sink->set_color(spdlog::level::critical, FOREGROUND_RED | FOREGROUND_INTENSITY);    // Bright red.
+#ifdef _WIN32
+        // Windows
+        console_sink->set_color(spdlog::level::info, FOREGROUND_GREEN);
+        console_sink->set_color(spdlog::level::warn, FOREGROUND_RED | FOREGROUND_GREEN);
+        console_sink->set_color(spdlog::level::err, FOREGROUND_RED);
+        console_sink->set_color(spdlog::level::critical, FOREGROUND_RED | FOREGROUND_INTENSITY);
+#else
+        // Linux
+        console_sink->set_color(spdlog::level::info, "green");
+        console_sink->set_color(spdlog::level::warn, "yellow");
+        console_sink->set_color(spdlog::level::err, "red");
+        console_sink->set_color(spdlog::level::critical, "red bold");
+#endif
 
         std::shared_ptr<spdlog::sinks::basic_file_sink_mt> file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(log_file_name, true);    // Create file sink.
         file_sink->set_level(spdlog::level::trace);
