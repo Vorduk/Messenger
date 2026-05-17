@@ -1,34 +1,34 @@
-#include "DockManager.h"
+#include "DockableWindowsManager.h"
 #include "imgui_internal.h"
 #include <fstream>
 #include <functional>
 
-DockManager::DockManager() {
+DockableWindowsManager::DockableWindowsManager() {
     // Ensure ImGui saves/loads layout to an .ini file.
     if (ImGui::GetIO().IniFilename == nullptr)
         ImGui::GetIO().IniFilename = "imgui.ini";
 }
 
-void DockManager::addWindow(IDockableWindow* window) {
+void DockableWindowsManager::addWindow(IDockableWindow* window) {
     // Store the window pointer keyed by its unique name.
     m_windows[window->getName()] = window;
     m_layout_valid = false; // Layout must be rebuilt to include the new window.
 }
 
-void DockManager::removeWindow(const std::string& name) {
+void DockableWindowsManager::removeWindow(const std::string& name) {
     // Remove the window entry; it will no longer be rendered.
     m_windows.erase(name);
     m_layout_valid = false; // Layout must be rebuilt without this window.
 }
 
-void DockManager::setCurrentLayout(DockLayoutNode layout) {
+void DockableWindowsManager::setCurrentLayout(DockLayoutNode layout) {
     // Save the new layout tree; mark as needing rebuild.
     m_current_layout = std::move(layout);
     m_has_layout = true;
     m_layout_valid = false;
 }
 
-void DockManager::begin() {
+void DockableWindowsManager::begin() {
     // Make the dockspace window cover the entire usable viewport area.
     ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->WorkPos);
@@ -71,7 +71,7 @@ void DockManager::begin() {
     }
 }
 
-void DockManager::renderWindows() {
+void DockableWindowsManager::renderWindows() {
     // Draw each registered window – ImGui will automatically dock them.
     for (const auto& [name, window] : m_windows) {
         ImGui::Begin(name.c_str());
@@ -80,13 +80,13 @@ void DockManager::renderWindows() {
     }
 }
 
-void DockManager::end() {
+void DockableWindowsManager::end() {
     ImGui::End(); // Close the dockspace container window.
 }
 
 
 
-void DockManager::applyLayout(ImGuiID dockspace_id, const DockLayoutNode& layout) {
+void DockableWindowsManager::applyLayout(ImGuiID dockspace_id, const DockLayoutNode& layout) {
     // Wipe any existing layout and create a fresh dockspace node.
     ImGui::DockBuilderRemoveNode(dockspace_id);
     ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
@@ -114,7 +114,7 @@ void DockManager::applyLayout(ImGuiID dockspace_id, const DockLayoutNode& layout
     ImGui::DockBuilderFinish(dockspace_id);
 }
 
-bool DockManager::hasIniFile() const {
+bool DockableWindowsManager::hasIniFile() const {
     const char* ini_file = ImGui::GetIO().IniFilename;
     if (!ini_file || !*ini_file) return false;
     std::ifstream file(ini_file, std::ios::binary | std::ios::ate);

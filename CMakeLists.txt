@@ -121,12 +121,12 @@ set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 
 add_subdirectory(extern/glfw)
 add_subdirectory(extern/imgui)
+add_subdirectory(extern/sqlite) 
+add_subdirectory(extern/spdlog)
 
 add_subdirectory(Common)
 add_subdirectory(Client)
 add_subdirectory(Server)
-add_subdirectory(extern/sqlite)
-add_subdirectory(extern/spdlog)
 
 message(STATUS "")
 message(STATUS "========================================")

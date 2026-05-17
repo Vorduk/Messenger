@@ -4,6 +4,11 @@
 #include <random>
 #include <string>
 
+UserManager::UserManager(IMessageRepository& repository)
+    : m_repository(repository)
+{
+}
+
 bool UserManager::login(const std::string& username) {
     std::optional<User> user = m_repository.getUserByUsername(username);
     if (user.has_value()) {

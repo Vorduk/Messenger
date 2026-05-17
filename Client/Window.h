@@ -6,7 +6,7 @@
 #include <stdexcept>
 
 /**
- * Wrapper for a GLFW window with an OpenGL context.
+ * @brief Wrapper for a GLFW window with an OpenGL context.
  * Creates and manages a GLFW window, initializes GLEW, and provides
  * basic frame operations (polling events, swapping buffers).
  * Non-copyable.

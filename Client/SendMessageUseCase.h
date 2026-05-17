@@ -1,17 +1,17 @@
 #pragma once
-#include "IMessageSender.h"
+#include "IServerAPI.h"
+#include "IMessageRepository.h"
 #include "ISendMessagePresenter.h"
-#include "Message.h"
-#include "IMessageSerializer.h"
+#include <string>
 #include <memory>
 
 class SendMessageUseCase {
 public:
-    SendMessageUseCase(IMessageSender& message_sender, ISendMessagePresenter& output, std::shared_ptr<IMessageSerializer> serializer);
-    void execute(const std::string& sender, const std::string& reciever, const std::string& text);
-
+    SendMessageUseCase(IServerAPI& server, ISendMessagePresenter& presenter, IMessageRepository& local_repo);
+    void execute(const std::string& senderId, const std::string& receiverId,
+        const std::string& text);
 private:
-    IMessageSender& m_message_sender;
-    ISendMessagePresenter& m_output;
-    std::shared_ptr<IMessageSerializer> m_serializer;
+    IServerAPI& m_server;
+    ISendMessagePresenter& m_presenter;
+    IMessageRepository& m_local_repo;
 };

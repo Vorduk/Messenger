@@ -10,7 +10,7 @@ Logger& Logger::getInstance() {
 
 void Logger::initialize(const std::string& log_file_name) {
     try {  
-        auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();    // Create console sink with colors.  
+        std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();    // Create console sink with colors.  
         console_sink->set_level(spdlog::level::trace);  // Level of output, above selected.
 
         // Colors for different levels.
@@ -74,3 +74,4 @@ void Logger::setShowFileInfo(bool show) {
 void Logger::setShowLevelPrefix(bool show) {
     m_show_level_prefix = show;
 }
+

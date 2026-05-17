@@ -58,12 +58,12 @@ struct DockLayoutNode {
  * of windows, per-frame rendering, and automatic save/restore of the
  * layout via the ImGui .ini file.
  */
-class DockManager {
+class DockableWindowsManager {
 public:
     /**
      * @brief Constructor. Configures the ImGui .ini filename if not already set.
      */
-    DockManager();
+    DockableWindowsManager();
 
     /**
      * @brief Add a window to be rendered every frame inside the dockspace.

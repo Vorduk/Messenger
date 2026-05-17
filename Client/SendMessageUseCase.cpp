@@ -1,21 +1,32 @@
 #include "SendMessageUseCase.h"
+#include "UUIDGenerator.h"
 
-SendMessageUseCase::SendMessageUseCase(IMessageSender& message_sender, ISendMessagePresenter& output, std::shared_ptr<IMessageSerializer> serializer) :
-    m_message_sender(message_sender), m_output(output), m_serializer(serializer)
-{
-
+SendMessageUseCase::SendMessageUseCase(IServerAPI& server, ISendMessagePresenter& presenter, IMessageRepository& local_repo)
+    : m_server(server), m_presenter(presenter), m_local_repo(local_repo) {
 }
 
-void SendMessageUseCase::execute(const std::string& sender, const std::string& reciever, const std::string& text) {
-    Message message(sender, reciever, text);
-    if (message.text.empty()) {
-        m_output.onError("Message cannot be empty");
+void SendMessageUseCase::execute(const std::string& sender_id, const std::string& receiver_id,
+    const std::string& text) {
+    if (text.empty()) {
+        m_presenter.onError("Message cannot be empty");
         return;
     }
-    std::string serialized_message = m_serializer->serialize(message);
-    if (!m_message_sender.send(serialized_message)) {
-        m_output.onError("Failed to send message (no connection)");
-        return;
-    }
-    m_output.onMessageSent("todo: id", "message was sent");
+
+    Message localMsg(sender_id, receiver_id, text);
+    localMsg.id = generateUUID();
+    localMsg.status = MessageStatus::Sending;
+    m_local_repo.saveMessage(localMsg);
+
+    std::string local_id = localMsg.id;
+    m_server.sendMessage(sender_id, receiver_id, text,
+        [this, local_id](bool success, const std::string& msg_id_or_error) {
+            if (success) {
+                m_local_repo.updateMessageStatus(local_id, MessageStatus::Sent);
+                m_presenter.onMessageSent(local_id, "Message sent");
+            }
+            else {
+                m_local_repo.updateMessageStatus(local_id, MessageStatus::Failed);
+                m_presenter.onError(msg_id_or_error);
+            }
+        });
 }
