@@ -32,8 +32,8 @@ void ChatWindow::AddMessage(const std::string& sender,
 void ChatWindow::SetHistory(const std::vector<Message>& messages) {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_messages.clear();
-    for (size_t i = 0; i < messages.size(); ++i) {
-        const Message& msg = messages[i];
+    for (size_t i = messages.size(); i > 0; --i) {
+        const Message& msg = messages[i - 1];
         bool local = (msg.sender_id == m_sender_id);
         m_messages.push_back({ msg.text, local });
     }
