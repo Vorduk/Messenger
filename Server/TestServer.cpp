@@ -386,10 +386,35 @@ std::string TestServer::getUsers(const std::string& excludeUserId) {
         sqlite3_bind_text(stmt, 1, excludeUserId.c_str(), -1, SQLITE_TRANSIENT);
         while (sqlite3_step(stmt) == SQLITE_ROW) {
             nlohmann::json u;
-            u["id"] = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+            std::string uid = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+            u["id"] = uid;
             u["username"] = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
             u["display_name"] = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
             u["is_online"] = sqlite3_column_int(stmt, 3) != 0;
+
+            const char* lastMsgSql = R"(
+                SELECT text, timestamp FROM messages
+                WHERE (sender_id = ? AND receiver_id = ?)
+                   OR (sender_id = ? AND receiver_id = ?)
+                ORDER BY timestamp DESC LIMIT 1;
+            )";
+            sqlite3_stmt* msgStmt;
+            if (sqlite3_prepare_v2(m_db, lastMsgSql, -1, &msgStmt, nullptr) == SQLITE_OK) {
+                sqlite3_bind_text(msgStmt, 1, excludeUserId.c_str(), -1, SQLITE_TRANSIENT);
+                sqlite3_bind_text(msgStmt, 2, uid.c_str(), -1, SQLITE_TRANSIENT);
+                sqlite3_bind_text(msgStmt, 3, uid.c_str(), -1, SQLITE_TRANSIENT);
+                sqlite3_bind_text(msgStmt, 4, excludeUserId.c_str(), -1, SQLITE_TRANSIENT);
+                if (sqlite3_step(msgStmt) == SQLITE_ROW) {
+                    u["last_message"] = reinterpret_cast<const char*>(sqlite3_column_text(msgStmt, 0));
+                    u["last_message_timestamp"] = sqlite3_column_int64(msgStmt, 1);
+                }
+                else {
+                    u["last_message"] = "";
+                    u["last_message_timestamp"] = 0;
+                }
+                sqlite3_finalize(msgStmt);
+            }
+
             usersArr.push_back(u);
         }
         sqlite3_finalize(stmt);

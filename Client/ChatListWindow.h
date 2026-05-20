@@ -30,5 +30,5 @@ private:
     std::vector<User> m_users;
     std::function<void(const User&)> m_on_selected;
 
-
+    std::string formatLastMessageTime(const std::chrono::system_clock::time_point& tp) const;
 };

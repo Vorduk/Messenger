@@ -42,12 +42,18 @@ void ServerAPI::getUsers(const std::string& user_id, std::function<void(std::vec
         std::vector<User> users;
         nlohmann::json resp = nlohmann::json::parse(response);
         if (resp["status"] == "ok") {
-            for (const auto& jUser : resp["users"]) {
+            for (const nlohmann::json& jUser : resp["users"]) {
                 User u;
                 u.id = jUser["id"];
                 u.username = jUser["username"];
                 u.display_name = jUser.value("display_name", "");
                 u.is_online = jUser.value("is_online", false);
+                u.last_message = jUser.value("last_message", "");
+                long long ts = jUser.value("last_message_timestamp", 0LL);
+                if (ts > 0)
+                    u.last_message_time = std::chrono::system_clock::time_point(std::chrono::milliseconds(ts));
+                else
+                    u.last_message_time = std::chrono::system_clock::time_point::min();
                 users.push_back(u);
             }
         }
