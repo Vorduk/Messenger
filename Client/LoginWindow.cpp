@@ -7,7 +7,7 @@ LoginWindow::LoginWindow(LoginUseCase& login_uc, RegisterUseCase& register_uc, L
     memset(m_username, 0, sizeof(m_username));
 }
 
-void LoginWindow::Render() {
+void LoginWindow::render() {
     ImGui::Text("Welcome to Messenger!");
     if (m_is_waiting) {
         ImGui::Text("Connecting to server...");

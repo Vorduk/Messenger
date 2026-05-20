@@ -1,6 +1,6 @@
 #pragma once
 #include "imgui.h"
-#include "IDockableWindow.h"
+#include "DockableWindow.h"
 #include <functional>
 #include <string>
 #include <unordered_map>
@@ -69,7 +69,7 @@ public:
      * @brief Add a window to be rendered every frame inside the dockspace.
      * @param window Pointer to the dockable window (ownership remains outside).
      */
-    void addWindow(IDockableWindow* window);
+    void addWindow(DockableWindow* window);
 
     /**
      * @brief Remove a previously added window by its unique name.
@@ -121,7 +121,7 @@ private:
      */
     bool hasIniFile() const;
 
-    std::unordered_map<std::string, IDockableWindow*> m_windows; ///< Active windows by name.
+    std::unordered_map<std::string, DockableWindow*> m_windows; ///< Active windows by name.
     DockLayoutNode m_current_layout;     ///< Layout to apply when needed.
     bool m_layout_valid = false;         ///< Whether the current layout matches the windows.
     bool m_first_frame = true;           ///< True until the first begin() completes.

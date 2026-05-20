@@ -44,10 +44,11 @@ public:
 
 private:
     void renderUI();                                        ///< Render all registered windows.
+
     void onUserLoggedIn(const std::string& user_id);        ///< Called after successful login/register.
     void selectContact(const User& user);                   ///< Handle contact selection from ChatListWindow.
 
-    std::atomic<bool> m_running{ false };                   ///< Main loop guard.
+    std::atomic<bool> m_running{ false };                   ///< Main loop flag.
 
     // Windowing and rendering
     Window m_window;                                        ///< GLFW window wrapper.

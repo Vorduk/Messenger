@@ -9,7 +9,7 @@ DockableWindowsManager::DockableWindowsManager() {
         ImGui::GetIO().IniFilename = "imgui.ini";
 }
 
-void DockableWindowsManager::addWindow(IDockableWindow* window) {
+void DockableWindowsManager::addWindow(DockableWindow* window) {
     // Store the window pointer keyed by its unique name.
     m_windows[window->getName()] = window;
     m_layout_valid = false; // Layout must be rebuilt to include the new window.
@@ -75,7 +75,7 @@ void DockableWindowsManager::renderWindows() {
     // Draw each registered window – ImGui will automatically dock them.
     for (const auto& [name, window] : m_windows) {
         ImGui::Begin(name.c_str());
-        window->Render();
+        window->render();
         ImGui::End();
     }
 }

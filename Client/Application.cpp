@@ -66,7 +66,6 @@ void Application::onUserLoggedIn(const std::string& user_id) {
     // Chat windows
     m_chat_window = std::make_unique<ChatWindow>();
 
-    // Обработчик отправки – теперь время жизни контролируется через shared_ptr
     struct SendHandler : ISendMessageHandler {
         SendMessageUseCase& m_uc;
         explicit SendHandler(SendMessageUseCase& uc) : m_uc(uc) {}
@@ -79,11 +78,10 @@ void Application::onUserLoggedIn(const std::string& user_id) {
     m_send_handler = std::make_shared<SendHandler>(*m_send_uc);
     m_chat_window->SetHandler(m_send_handler.get());
 
-    // Передаём загрузчик сообщений для автообновления
     m_chat_window->SetMessageLoader(m_get_messages_uc.get());
 
     m_chat_list_window = std::make_unique<ChatListWindow>(*m_get_users_uc, m_current_user_id);
-    m_chat_list_window->SetOnUserSelected([this](const User& user) { selectContact(user); });
+    m_chat_list_window->setOnUserSelected([this](const User& user) { selectContact(user); });
 
     m_dock_manager.addWindow(m_chat_window.get());
     m_dock_manager.addWindow(m_chat_list_window.get());

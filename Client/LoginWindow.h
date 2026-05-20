@@ -1,16 +1,16 @@
 #pragma once
-#include "IDockableWindow.h"
+#include "DockableWindow.h"
 #include "LoginUseCase.h"
 #include "RegisterUseCase.h"
 #include <functional>
 #include <string>
 
-class LoginWindow : public IDockableWindow {
+class LoginWindow : public DockableWindow {
 public:
     using LoginCallback = std::function<void(const std::string& user_id)>;
     LoginWindow(LoginUseCase& login_uc, RegisterUseCase& register_uc, LoginCallback on_login);
     const char* getName() const override { return "Login"; }
-    void Render() override;
+    void render() override;
 private:
     LoginUseCase& m_login_uc;
     RegisterUseCase& m_register_uc;
