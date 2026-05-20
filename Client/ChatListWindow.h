@@ -5,6 +5,7 @@
 #include <vector>
 #include <functional>
 #include "StyleManager.h"
+#include "ChatListItem.h"
 
 /**
  * @brief ImGui window with list of chats.
@@ -21,13 +22,13 @@ private:
     void refreshUsers();
 
     // Render.
-    void renderUserBlock(const User& user);
+    void renderUserBlock(const ChatListItem& item);
     void renderUserAvatar(const User& user, float size);
     ChatListWindowStyle m_current_style;
 
     GetUsersUseCase& m_get_users_uc;
     std::string m_current_user_id;
-    std::vector<User> m_users;
+    std::vector<ChatListItem> m_items;
     std::function<void(const User&)> m_on_selected;
 
     std::string formatLastMessageTime(const std::chrono::system_clock::time_point& tp) const;

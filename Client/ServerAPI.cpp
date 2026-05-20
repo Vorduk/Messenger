@@ -34,30 +34,42 @@ void ServerAPI::login(const std::string& username, std::function<void(bool, cons
         });
 }
 
-void ServerAPI::getUsers(const std::string& user_id, std::function<void(std::vector<User>)> callback) {
+void ServerAPI::getUsers(const std::string& user_id, std::function<void(std::vector<ChatListItem>)> callback) {
     nlohmann::json req;
     req["action"] = "get_users";
     req["user_id"] = user_id;
+
     m_client.sendRequest(req.dump(), [callback](const std::string& response) {
-        std::vector<User> users;
+        std::vector<ChatListItem> items;
         nlohmann::json resp = nlohmann::json::parse(response);
         if (resp["status"] == "ok") {
-            for (const nlohmann::json& jUser : resp["users"]) {
-                User u;
+            for (const auto& jUser : resp["users"]) {
+                ChatListItem item;
+                User& u = item.user;
+
                 u.id = jUser["id"];
                 u.username = jUser["username"];
                 u.display_name = jUser.value("display_name", "");
                 u.is_online = jUser.value("is_online", false);
-                u.last_message = jUser.value("last_message", "");
+                // (bio, avatar_path, birthday) CAN BE FILLED HERE
+
+                item.last_message = jUser.value("last_message", "");
                 long long ts = jUser.value("last_message_timestamp", 0LL);
                 if (ts > 0)
-                    u.last_message_time = std::chrono::system_clock::time_point(std::chrono::milliseconds(ts));
+                    item.last_message_time = std::chrono::system_clock::time_point(std::chrono::milliseconds(ts));
                 else
-                    u.last_message_time = std::chrono::system_clock::time_point::min();
-                users.push_back(u);
+                    item.last_message_time = std::chrono::system_clock::time_point::min();
+
+                int status_int = jUser.value("last_message_status", -1);
+                if (status_int >= 0)
+                    item.last_message_status = static_cast<MessageStatus>(status_int);
+                else
+                    item.last_message_status = MessageStatus::Default;
+
+                items.push_back(std::move(item));
             }
         }
-        callback(users);
+        callback(items);
         });
 }
 

@@ -3,11 +3,10 @@
 #include "LogMacros.h"
 
 ChatListWindow::ChatListWindow(GetUsersUseCase& get_users_uc, const std::string& current_user_id)
-    : m_get_users_uc(get_users_uc), m_current_user_id(current_user_id) {
-
+    : m_get_users_uc(get_users_uc), m_current_user_id(current_user_id)
+{
     m_current_style = StyleManager::getInstance().getChatListWindowStyle();
     refreshUsers();
-
 }
 
 void ChatListWindow::setOnUserSelected(std::function<void(const User&)> callback) {
@@ -16,9 +15,9 @@ void ChatListWindow::setOnUserSelected(std::function<void(const User&)> callback
 
 void ChatListWindow::refreshUsers() {
     m_get_users_uc.execute(m_current_user_id,
-        [this](std::vector<User> users) {
-            m_users = std::move(users);
-            LOG_INFO("User list updated, count: {}", m_users.size());
+        [this](std::vector<ChatListItem> items) {
+            m_items = std::move(items);
+            LOG_INFO("User list updated, count: {}", m_items.size());
         });
 }
 
@@ -35,26 +34,22 @@ void ChatListWindow::render() {
 
     ImGui::Separator();
 
-    if (m_users.empty()) {
-        // Use empty chat list text and style from style
+    if (m_items.empty()) {
         ImGui::PushStyleColor(ImGuiCol_Text, m_current_style.empty_chat_list_text_style.color);
         ImGui::Text("%s", m_current_style.empty_chat_list_text.c_str());
         ImGui::PopStyleColor();
     }
     else {
-        // Render all users elements.
-        for (size_t i = 0; i < m_users.size(); ++i) {
-            const User& user = m_users[i];
-
-            renderUserBlock(user);
-
+        for (const auto& item : m_items) {
+            renderUserBlock(item);
             ImGui::Spacing();
         }
     }
 }
 
-void ChatListWindow::renderUserBlock(const User& user)
+void ChatListWindow::renderUserBlock(const ChatListItem& item)
 {
+    const User& user = item.user;
     std::string block_id = "user_block_" + user.id; // Unique name for imgui.
 
     ImVec2 block_start = ImGui::GetCursorScreenPos();
@@ -109,7 +104,7 @@ void ChatListWindow::renderUserBlock(const User& user)
     ImGui::PopStyleColor();
 
     // Render last message time on the right side (opposite to name).
-    std::string time_str = formatLastMessageTime(user.last_message_time);
+    std::string time_str = formatLastMessageTime(item.last_message_time);
     if (!time_str.empty()) {
         ImGui::SameLine();
         float time_width = ImGui::CalcTextSize(time_str.c_str()).x;
@@ -123,12 +118,40 @@ void ChatListWindow::renderUserBlock(const User& user)
     // Render last message preview below name (replaces online/offline text status).
     float last_msg_y = name_y + m_current_style.user_name_text_style.font_size + 2;
     ImGui::SetCursorPos(ImVec2(name_x, last_msg_y));
-    if (!user.last_message.empty()) {
-        std::string msg = user.last_message;
+    if (!item.last_message.empty()) {
+        std::string msg = item.last_message;
         if (msg.length() > 30) msg = msg.substr(0, 27) + "..."; // truncate if too long.
         ImGui::PushStyleColor(ImGuiCol_Text, m_current_style.last_message_text_style.color);
         ImGui::Text("%s", msg.c_str());
         ImGui::PopStyleColor();
+    }
+
+    if (!item.last_message.empty() && item.last_message_status != MessageStatus::Default) {
+        std::string status_text = messageStatusToString(item.last_message_status);
+        if (!status_text.empty()) {
+            ImVec4 status_color;
+            switch (item.last_message_status) {
+            case MessageStatus::Sending:   status_color = ImVec4(0.8f, 0.8f, 0.0f, 1.0f); break; // желтый
+            case MessageStatus::Sent:      status_color = ImVec4(0.7f, 0.7f, 0.7f, 1.0f); break; // серый
+            case MessageStatus::Delivered: status_color = ImVec4(0.7f, 0.7f, 0.7f, 1.0f); break; // серый
+            case MessageStatus::Read:      status_color = ImVec4(0.3f, 0.6f, 1.0f, 1.0f); break; // синий
+            case MessageStatus::Failed:    status_color = ImVec4(1.0f, 0.2f, 0.2f, 1.0f); break; // красный
+            default:                       status_color = ImVec4(0.7f, 0.7f, 0.7f, 1.0f); break;
+            }
+
+            ImVec2 text_size = ImGui::CalcTextSize(status_text.c_str());
+            float right_padding = m_current_style.user_block_style.padding;
+            float bottom_padding = m_current_style.user_block_style.padding;
+
+            ImGui::SetCursorPos(ImVec2(
+                block_width - right_padding - text_size.x,
+                block_height - bottom_padding - text_size.y
+            ));
+
+            ImGui::PushStyleColor(ImGuiCol_Text, status_color);
+            ImGui::Text("%s", status_text.c_str());
+            ImGui::PopStyleColor();
+        }
     }
 
     ImGui::EndChild();

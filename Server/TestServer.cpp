@@ -393,7 +393,7 @@ std::string TestServer::getUsers(const std::string& excludeUserId) {
             u["is_online"] = sqlite3_column_int(stmt, 3) != 0;
 
             const char* lastMsgSql = R"(
-                SELECT text, timestamp FROM messages
+                SELECT text, timestamp, status FROM messages
                 WHERE (sender_id = ? AND receiver_id = ?)
                    OR (sender_id = ? AND receiver_id = ?)
                 ORDER BY timestamp DESC LIMIT 1;
@@ -407,10 +407,12 @@ std::string TestServer::getUsers(const std::string& excludeUserId) {
                 if (sqlite3_step(msgStmt) == SQLITE_ROW) {
                     u["last_message"] = reinterpret_cast<const char*>(sqlite3_column_text(msgStmt, 0));
                     u["last_message_timestamp"] = sqlite3_column_int64(msgStmt, 1);
+                    u["last_message_status"] = sqlite3_column_int(msgStmt, 2);
                 }
                 else {
                     u["last_message"] = "";
                     u["last_message_timestamp"] = 0;
+                    u["last_message_status"] = 6;
                 }
                 sqlite3_finalize(msgStmt);
             }

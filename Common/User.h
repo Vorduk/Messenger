@@ -15,14 +15,9 @@ struct User {
     bool is_online = false;     // Current online status
     bool show_online = true;    // Privacy setting: show/hide online status
     bool show_typing = true;    // Privacy setting: show/hide typing indicator
-    std::string last_message;   // Last message text
-    std::chrono::system_clock::time_point last_message_time; // Last message time (UTC)
 
-    User() : last_message_time(std::chrono::system_clock::time_point::min()) {}
-
+    User() = default;
     User(const std::string& username, const std::string& display_name)
-        : username(username)
-        , display_name(display_name)
-        , last_message_time(std::chrono::system_clock::time_point::min()) {
+        : username(username), display_name(display_name) {
     }
 };
