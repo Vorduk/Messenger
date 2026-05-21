@@ -41,6 +41,11 @@ void AsyncNetworkClient::processQueue() {
     m_mutex.unlock(); // Unlock the mutex before performing the blocking network call.
 
     std::string response = m_client->sendRequest(request.json); // Perform the blocking TCP request.
+
+    if (response.find("\"status\":\"error\"") != std::string::npos) {
+        m_is_server_connected = false;
+    }
+    
     if (request.callback) {
         std::lock_guard<std::mutex> cb_lock(m_callback_mutex); // Lock the callback mutex to safely push the pending callback.
         m_pending_callbacks.push([cb = std::move(request.callback), response] { cb(response); }); // Enqueue the callback for later execution on the main thread.
