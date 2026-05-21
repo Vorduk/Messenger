@@ -11,6 +11,9 @@
  * Protocol format:
  *   Request:  JSON + '\n'
  *   Response: JSON + '\n'
+ *
+ * Blocks on sendRequest(). Designed as a building block for AsyncNetworkClient.
+ * Do NOT call from the UI thread directly.
  */
 class TcpClient {
 public:
