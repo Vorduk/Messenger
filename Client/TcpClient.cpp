@@ -55,6 +55,18 @@ bool TcpClient::connectToServer() {
         m_socket = -1;
         return false;
     }
+
+    // Timeout for recv() 
+#ifdef _WIN32
+    DWORD timeout = 5000; // 5 секунд
+    setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(timeout));
+#else
+    struct timeval tv;
+    tv.tv_sec = 5;
+    tv.tv_usec = 0;
+    setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
+#endif
+    
     m_is_server_connected = true;
     return true;
 }
