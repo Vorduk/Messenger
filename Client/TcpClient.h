@@ -7,6 +7,10 @@
  * Manages a single persistent TCP connection to the server.
  * All network errors are handled internally - the caller receives
  * an empty string or error JSON on failure.
+ * 
+ * Protocol format:
+ *   Request:  JSON + '\n'
+ *   Response: JSON + '\n'
  */
 class TcpClient {
 public:
@@ -31,4 +35,5 @@ private:
 	std::string m_server_address;		///< Server ip or name.
 	int m_port;							///< Port.
 	bool m_is_server_connected = false;	///< Connection flag.
+    std::string m_leftover_buffer;      ///< Buffer for the bytes that left after /n after request
 };
