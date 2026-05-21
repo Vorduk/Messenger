@@ -12,7 +12,21 @@ class TcpClient;
 
 /**
  * @brief Manages asynchronous TCP communication with the server on a dedicated thread,
- * queuing outgoing requests and delivering responses via callbacks executed in the UI thread.
+ *        queuing outgoing requests and delivering responses via callbacks executed in the UI thread.
+ *
+ * This class implements two separate queues:
+ * - Request queue (main thread --> worker thread): stores outgoing JSON requests.
+ * - Callback queue (worker thread --> main thread): stores response callbacks to be
+ *   executed on the main thread.
+ *
+ * ## Thread safety
+ * - sendRequest() can be called from any thread.
+ * - pollCallbacks() must be called from the main/UI thread once per frame.
+ * - isConnected() is safe to call from any thread.
+ *
+ * @note If the initial connection fails, the worker thread still starts and will attempt
+ *       to send requests (which will fail with an error response). Reconnection logic
+ *       should be added externally if needed.
  */
 class AsyncNetworkClient {
 public:
