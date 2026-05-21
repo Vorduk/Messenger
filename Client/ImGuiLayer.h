@@ -2,7 +2,7 @@
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
-#include "Window.h"
+#include "Window.h" // Glwf window wrapper
 
 /**
  * Wrapper for ImGui context and rendering lifecycle tied to a GLFW window.
@@ -14,9 +14,10 @@ public:
     ImGuiLayer(Window& window);
     ~ImGuiLayer();
 
+    // Call from main loop.
     void beginFrame();
     void endFrame();
 
 private:
-    Window& m_window;
+    Window& m_window; ///< Glfw window wrapper.
 };
