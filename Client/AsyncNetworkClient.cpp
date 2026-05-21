@@ -33,21 +33,24 @@ void AsyncNetworkClient::sendRequest(const std::string& json, ResponseCallback o
     m_cv.notify_one();
 }
 
+void AsyncNetworkClient::processQueue() {
+    Request request = std::move(m_queue.front());
+    m_queue.pop();
+    m_mutex.unlock();
+
+    std::string response = m_client->sendRequest(request.json);
+    if (request.callback) {
+        std::lock_guard<std::mutex> cb_lock(m_callback_mutex);
+        m_pending_callbacks.push([cb = std::move(request.callback), response] { cb(response); });
+    }
+}
+
 void AsyncNetworkClient::workerLoop() {
     while (m_is_running) {
         std::unique_lock<std::mutex> lock(m_mutex);
         m_cv.wait(lock, [this] { return !m_queue.empty() || !m_is_running; });
         if (!m_is_running) break;
-
-        Request request = std::move(m_queue.front());
-        m_queue.pop();
-        lock.unlock();
-
-        std::string response = m_client->sendRequest(request.json);
-        if (request.callback) {
-            std::lock_guard<std::mutex> lock(m_callback_mutex);
-            m_pending_callbacks.push([cb = std::move(request.callback), response] { cb(response); });
-        }
+        processQueue();
     }
 }
 
