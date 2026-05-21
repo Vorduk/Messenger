@@ -16,28 +16,73 @@ class TcpClient;
  */
 class AsyncNetworkClient {
 public:
-    using ResponseCallback = std::function<void(const std::string& response)>;
 
+    /**
+     * @brief Callback type for receiving server responses.
+     *
+     * The callback is invoked on the main thread during pollCallbacks().
+     * The string parameter contains the raw JSON response from the server,
+     * or an error JSON like `{"status":"error","message":"..."}` on failure.
+     */
+    using ResponseCallback = std::function<void(const std::string& response)>;
+    
     AsyncNetworkClient(const std::string& server_address, int port);
     ~AsyncNetworkClient();
 
-    // Can be called from any thread, wil be executed asynchronously.
+    /**
+     * @brief Queues a JSON request for asynchronous processing.
+     *
+     * Thread-safe. Can be called from any thread.
+     * If the client is not connected, the callback is invoked immediately
+     * with an error response.
+     *
+     * @param json       Single-line JSON request string (newline is appended automatically).
+     * @param onResponse Callback invoked on the main thread when the response arrives.
+     */
     void sendRequest(const std::string& json, ResponseCallback onResponse);
 
-    // Check status of connection.
+    /**
+     * @brief Returns the current connection status.
+     *
+     * Thread-safe. Can be called from any thread.
+     * @return true if connected to the server, false otherwise.
+     */
     bool isConnected() const { return m_is_server_connected; }
 
-    // Execute callbacks, call from main loop.
+    /**
+     * @brief Executes all pending response callbacks on the calling thread.
+     *
+     * Must be called from the main/UI thread once per frame in the render loop.
+     * This is required because UI frameworks like ImGui are not thread-safe.
+     */
     void pollCallbacks();
 
 private:
+    /**
+     * @brief Main function executed by the worker thread.
+     *
+     * Waits on the condition variable for new requests, sends them via TcpClient,
+     * and queues the responses into m_pending_callbacks.
+     * Exits when m_is_running becomes false.
+     */
     void workerLoop();
+
+    /**
+     * @brief Processes a single request from the front of the queue.
+     *
+     * Extracts the next request, releases the mutex, sends it via TcpClient
+     * (blocking), and queues the response callback into m_pending_callbacks.
+     * Called from the worker thread only while holding m_mutex.
+     */
     void processQueue();
 
-    std::unique_ptr<TcpClient> m_client;    ///< Tcp client.
+    std::unique_ptr<TcpClient> m_client;    ///< Blocking TCP client.
     std::string m_server_address;           ///< Server address.
     int m_port;                             ///< Port.
 
+    /**
+     * @brief A queued request waiting to be sent.
+     */
     struct Request {
         std::string json;           ///< Request.
         ResponseCallback callback;  ///< On response callback
@@ -47,10 +92,8 @@ private:
     std::mutex m_mutex;             ///< Mutex.
     std::condition_variable m_cv;   ///< Conditional variable.
     std::thread m_worker_thread;    ///< Worker thread.
-
-    std::atomic<bool> m_is_server_connected{ false };   ///< Connection flag.
-    std::atomic<bool> m_is_running{ true };             ///< Working flag.
-
+    std::atomic<bool> m_is_server_connected{ false };       ///< Connection flag.
+    std::atomic<bool> m_is_running{ true };                 ///< Working flag.
     std::queue<std::function<void()>> m_pending_callbacks;  ///< Queue for callbacks that should be executed in main thread.
-    std::mutex m_callback_mutex;
+    std::mutex m_callback_mutex;                            ///< Mutex protecting m_pending_callbacks.
 };
