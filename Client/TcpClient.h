@@ -44,5 +44,6 @@ private:
 	int m_port;							///< Port.
 	bool m_is_server_connected = false;	///< Connection flag.
     std::string m_leftover_buffer;      ///< Buffer for the bytes that left after /n after request	
+	bool m_has_timeouts = false;
 };
 

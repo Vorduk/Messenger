@@ -40,6 +40,8 @@ public:
      */
     using ResponseCallback = std::function<void(const std::string& response)>;
 
+    using ReconnectCallback = std::function<void()>; ///< Called after successful reconnection
+
     AsyncNetworkClient(const std::string& server_address, int port);
     ~AsyncNetworkClient();
 
@@ -71,6 +73,9 @@ public:
      */
     void pollCallbacks();
 
+    /// Set callback to be invoked after automatic reconnection succeeds
+    void setReconnectCallback(ReconnectCallback callback);
+
 private:
     /**
      * @brief Main function executed by the worker thread.
@@ -80,15 +85,6 @@ private:
      * Exits when m_is_running becomes false.
      */
     void workerLoop();
-
-    /**
-     * @brief Processes a single request from the front of the queue.
-     *
-     * Extracts the next request, releases the mutex, sends it via TcpClient
-     * (blocking), and queues the response callback into m_pending_callbacks.
-     * Called from the worker thread only while holding m_mutex.
-     */
-    void processQueue();
 
     std::unique_ptr<TcpClient> m_client;    ///< Blocking TCP client.
     std::string m_server_address;           ///< Server address.
@@ -110,4 +106,10 @@ private:
     std::atomic<bool> m_is_running{ true };                 ///< Working flag.
     std::queue<std::function<void()>> m_pending_callbacks;  ///< Queue for callbacks that should be executed in main thread.
     std::mutex m_callback_mutex;                            ///< Mutex protecting m_pending_callbacks.
+    ReconnectCallback m_reconnect_callback;                 ///< Called when reconnection succeeds
+
+    /**
+     * @brief Processes a single request from the front of the queue.
+     */
+    void processQueue(Request request);
 };

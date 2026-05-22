@@ -55,20 +55,11 @@ bool TcpClient::connectToServer() {
         m_socket = -1;
         return false;
     }
-
-    // Timeout for recv() 
-#ifdef _WIN32
-    DWORD timeout = 5000; // 5 секунд
-    setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(timeout));
-#else
-    struct timeval tv;
-    tv.tv_sec = 5;
-    tv.tv_usec = 0;
-    setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
-#endif
     
     m_is_server_connected = true;
+
     setTimeouts(5000, 5000);
+
     return true;
 }
 
@@ -103,7 +94,7 @@ std::string TcpClient::sendRequest(const std::string& request_json) {
         if (bytes_readed <= 0) {
             // Disconnected or error.
             m_is_server_connected = false;
-            m_socket = -1;
+            closeSocket();
             return R"({"status":"error","message":"Server disconnected"})";
         }
         m_leftover_buffer.append(buf, bytes_readed); // Add leftover bytes from previous request.
@@ -116,11 +107,52 @@ std::string TcpClient::sendRequest(const std::string& request_json) {
     if (newline_pos == std::string::npos) {
         return R"({"status":"error","message":"Invalid server response"})";
     }
-    std::string response = m_leftover_buffer.substr(0, newline_pos);
+    response = m_leftover_buffer.substr(0, newline_pos);
 
     // Delete used part from the buffer (including '\n').
     // Leftover left.
     m_leftover_buffer.erase(0, newline_pos + 1);
 
     return response;
+}
+
+bool TcpClient::isConnected() const
+{
+    return m_is_server_connected;
+}
+
+void TcpClient::setTimeouts(int send_timeout_ms, int recv_timeout_ms) {
+    if (m_socket != -1) {
+#ifdef _WIN32
+        DWORD timeout = send_timeout_ms;
+        setsockopt(m_socket, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout, sizeof(timeout));
+        timeout = recv_timeout_ms;
+        setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
+#else
+        struct timeval tv;
+        tv.tv_sec = send_timeout_ms / 1000;
+        tv.tv_usec = (send_timeout_ms % 1000) * 1000;
+        setsockopt(m_socket, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
+        tv.tv_sec = recv_timeout_ms / 1000;
+        tv.tv_usec = (recv_timeout_ms % 1000) * 1000;
+        setsockopt(m_socket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+#endif
+        m_has_timeouts = true;
+    }
+}
+
+void TcpClient::disconnect() {
+    m_is_server_connected = false;
+    closeSocket();
+}
+
+void TcpClient::closeSocket() {
+    if (m_socket != -1) {
+#ifdef _WIN32
+        closesocket(m_socket);
+#else
+        close(m_socket);
+#endif
+        m_socket = -1;
+    }
 }
