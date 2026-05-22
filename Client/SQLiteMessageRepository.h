@@ -3,6 +3,7 @@
 #include <sqlite3.h>
 #include <string>
 #include <memory>
+#include "ChatListItem.h"
 
 class SQLiteMessageRepository : public IMessageRepository {
 public:
@@ -28,11 +29,14 @@ public:
     bool updateMessageStatus(const std::string& message_id, MessageStatus status) override;
     std::vector<Message> getMessagesBetween(const std::string& user1_id, const std::string& user2_id, int limit = 50, int offset = 0) override; // For paging download
     std::vector<Message> getUnreadMessages(const std::string& user_id) override;
+    bool saveMessages(const std::vector<Message>& messages) override;
 
     // Cache management.
     void setMaxCachedMessages(int max_cached_messages) override;
     void pruneOldMessages() override;
-
+    bool cacheChatList(const std::string& userId, const std::vector<ChatListItem>& chats) override;
+    std::vector<ChatListItem> getCachedChatList(const std::string& userId) override;
+    
 private:
     bool createTables();
     bool ExecuteSQLWithLogging(const char* sql);

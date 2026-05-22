@@ -263,6 +263,17 @@ std::pair<std::string, std::string> TestServer::processRequest(const std::string
         resp["status"] = "ok";
         resp["messages"] = nlohmann::json::parse(getMessages(userId, partnerId, limit, offset));
     }
+    else if (action == "get_chats") {                        // <-- без предыдущего else
+        std::string userId = req.value("user_id", "");
+        resp["status"] = "ok";
+        resp["chats"] = nlohmann::json::parse(getChats(userId));
+    }
+    else if (action == "search_users") {
+        std::string userId = req.value("user_id", "");
+        std::string query = req.value("query", "");
+        resp["status"] = "ok";
+        resp["users"] = nlohmann::json::parse(searchUsers(userId, query));
+    }
     else {
         resp["status"] = "error";
         resp["message"] = "Unknown action";
@@ -478,5 +489,94 @@ std::string TestServer::getMessages(const std::string& user1, const std::string&
         arr.push_back(m);
     }
     sqlite3_finalize(stmt);
+    return arr.dump();
+}
+
+std::string TestServer::getChats(const std::string& userId) {
+    nlohmann::json arr = nlohmann::json::array();
+
+    const char* sql = R"(
+        SELECT DISTINCT
+            CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END AS partner_id
+        FROM messages
+        WHERE sender_id = ? OR receiver_id = ?
+        ORDER BY partner_id;
+    )";
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+        sqlite3_bind_text(stmt, 1, userId.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 2, userId.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 3, userId.c_str(), -1, SQLITE_TRANSIENT);
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            std::string partnerId = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+            nlohmann::json chat;
+            chat["partner_id"] = partnerId;
+
+            const char* userSql = "SELECT username, display_name, is_online FROM users WHERE id = ?;";
+            sqlite3_stmt* userStmt;
+            if (sqlite3_prepare_v2(m_db, userSql, -1, &userStmt, nullptr) == SQLITE_OK) {
+                sqlite3_bind_text(userStmt, 1, partnerId.c_str(), -1, SQLITE_TRANSIENT);
+                if (sqlite3_step(userStmt) == SQLITE_ROW) {
+                    chat["username"] = reinterpret_cast<const char*>(sqlite3_column_text(userStmt, 0));
+                    chat["display_name"] = reinterpret_cast<const char*>(sqlite3_column_text(userStmt, 1));
+                    chat["is_online"] = sqlite3_column_int(userStmt, 2) != 0;
+                }
+                sqlite3_finalize(userStmt);
+            }
+
+            const char* lastMsgSql = R"(
+                SELECT text, timestamp, status FROM messages
+                WHERE (sender_id = ? AND receiver_id = ?)
+                   OR (sender_id = ? AND receiver_id = ?)
+                ORDER BY timestamp DESC LIMIT 1;
+            )";
+            sqlite3_stmt* msgStmt;
+            if (sqlite3_prepare_v2(m_db, lastMsgSql, -1, &msgStmt, nullptr) == SQLITE_OK) {
+                sqlite3_bind_text(msgStmt, 1, userId.c_str(), -1, SQLITE_TRANSIENT);
+                sqlite3_bind_text(msgStmt, 2, partnerId.c_str(), -1, SQLITE_TRANSIENT);
+                sqlite3_bind_text(msgStmt, 3, partnerId.c_str(), -1, SQLITE_TRANSIENT);
+                sqlite3_bind_text(msgStmt, 4, userId.c_str(), -1, SQLITE_TRANSIENT);
+                if (sqlite3_step(msgStmt) == SQLITE_ROW) {
+                    chat["last_message"] = reinterpret_cast<const char*>(sqlite3_column_text(msgStmt, 0));
+                    chat["last_message_timestamp"] = sqlite3_column_int64(msgStmt, 1);
+                    chat["last_message_status"] = sqlite3_column_int(msgStmt, 2);
+                }
+                else {
+                    chat["last_message"] = "";
+                    chat["last_message_timestamp"] = 0;
+                    chat["last_message_status"] = 6;
+                }
+                sqlite3_finalize(msgStmt);
+            }
+            arr.push_back(chat);
+        }
+        sqlite3_finalize(stmt);
+    }
+    return arr.dump();
+}
+
+std::string TestServer::searchUsers(const std::string& excludeUserId, const std::string& query) {
+    nlohmann::json arr = nlohmann::json::array();
+    const char* sql = R"(
+        SELECT id, username, display_name, is_online FROM users
+        WHERE id != ? AND (username LIKE ? OR display_name LIKE ?)
+        ORDER BY username;
+    )";
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+        std::string likeQuery = "%" + query + "%";
+        sqlite3_bind_text(stmt, 1, excludeUserId.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 2, likeQuery.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 3, likeQuery.c_str(), -1, SQLITE_TRANSIENT);
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            nlohmann::json u;
+            u["id"] = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+            u["username"] = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+            u["display_name"] = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+            u["is_online"] = sqlite3_column_int(stmt, 3) != 0;
+            arr.push_back(u);
+        }
+        sqlite3_finalize(stmt);
+    }
     return arr.dump();
 }

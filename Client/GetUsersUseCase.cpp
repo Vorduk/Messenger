@@ -2,6 +2,6 @@
 
 GetUsersUseCase::GetUsersUseCase(IServerAPI& api) : m_api(api) {}
 
-void GetUsersUseCase::execute(const std::string& current_user_id, std::function<void(std::vector<ChatListItem>)> callback) {
-    m_api.getUsers(current_user_id, std::move(callback));
+void GetUsersUseCase::search(const std::string& current_user_id, const std::string& query, std::function<void(std::vector<ChatListItem>)> callback) {
+    m_api.searchUsers(current_user_id, query, std::move(callback));
 }

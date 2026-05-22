@@ -120,3 +120,64 @@ void ServerAPI::getMessages(const std::string& user_id, const std::string& partn
         callback(messages);
         });
 }
+
+void ServerAPI::getChats(const std::string& userId, std::function<void(bool, std::vector<ChatListItem>)> callback) {
+    nlohmann::json req;
+    req["action"] = "get_chats";
+    req["user_id"] = userId;
+    m_client.sendRequest(req.dump(), [callback](const std::string& response) {
+        std::vector<ChatListItem> items;
+        try {
+            nlohmann::json resp = nlohmann::json::parse(response);
+            if (resp["status"] == "ok") {
+                for (const auto& jChat : resp["chats"]) {
+                    ChatListItem item;
+                    User& u = item.user;
+                    u.id = jChat["partner_id"];
+                    u.username = jChat.value("username", "");
+                    u.display_name = jChat.value("display_name", "");
+                    u.is_online = jChat.value("is_online", false);
+                    item.last_message = jChat.value("last_message", "");
+                    long long ts = jChat.value("last_message_timestamp", 0LL);
+                    if (ts > 0)
+                        item.last_message_time = std::chrono::system_clock::time_point(std::chrono::milliseconds(ts));
+                    else
+                        item.last_message_time = std::chrono::system_clock::time_point::min();
+                    int status_int = jChat.value("last_message_status", -1);
+                    if (status_int >= 0)
+                        item.last_message_status = static_cast<MessageStatus>(status_int);
+                    else
+                        item.last_message_status = MessageStatus::Default;
+                    items.push_back(std::move(item));
+                }
+                callback(true, std::move(items));
+                return;
+            }
+        }
+        catch (...) {}
+        callback(false, std::vector<ChatListItem>{});
+        });
+}
+
+void ServerAPI::searchUsers(const std::string& userId, const std::string& query, std::function<void(std::vector<ChatListItem>)> callback) {
+    nlohmann::json req;
+    req["action"] = "search_users";
+    req["user_id"] = userId;
+    req["query"] = query;
+    m_client.sendRequest(req.dump(), [callback](const std::string& response) {
+        std::vector<ChatListItem> items;
+        nlohmann::json resp = nlohmann::json::parse(response);
+        if (resp["status"] == "ok") {
+            for (const auto& jUser : resp["users"]) {
+                ChatListItem item;
+                User& u = item.user;
+                u.id = jUser["id"];
+                u.username = jUser["username"];
+                u.display_name = jUser.value("display_name", "");
+                u.is_online = jUser.value("is_online", false);
+                items.push_back(std::move(item));
+            }
+        }
+        callback(items);
+        });
+}

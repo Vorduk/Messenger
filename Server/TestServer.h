@@ -32,11 +32,10 @@ private:
     bool registerUser(const std::string& username, std::string& outUserId, std::string& outError);
     bool loginUser(const std::string& username, std::string& outUserId, std::string& outError);
     std::string getUsers(const std::string& excludeUserId);
-    bool sendMessage(const std::string& senderId, const std::string& receiverId,
-        const std::string& text, std::string& outMessageId,
-        long long& outTimestamp);
-    std::string getMessages(const std::string& user1, const std::string& user2,
-        int limit, int offset);
+    bool sendMessage(const std::string& senderId, const std::string& receiverId, const std::string& text, std::string& outMessageId, long long& outTimestamp);
+    std::string getMessages(const std::string& user1, const std::string& user2, int limit, int offset);
+    std::string getChats(const std::string& userId); 
+    std::string searchUsers(const std::string& excludeUserId, const std::string& query);
 
     bool createTables();
     static std::string generateId();

@@ -4,6 +4,7 @@
 #include <vector>
 #include <optional>
 #include <string>
+#include "ChatListItem.h"
 
 /**
  * @brief Interface for message persistence.
@@ -26,8 +27,11 @@ public:
     virtual bool updateMessageStatus(const std::string& message_id, MessageStatus status) = 0;
     virtual std::vector<Message> getMessagesBetween( const std::string& user1_id, const std::string& user2_id, int limit = 50, int offset = 0) = 0; // For paging download
     virtual std::vector<Message> getUnreadMessages(const std::string& user_id) = 0;
+    virtual bool saveMessages(const std::vector<Message>& messages) = 0;
 
     // Cache management.
     virtual void setMaxCachedMessages(int max_cached_messages) = 0;
     virtual void pruneOldMessages() = 0; // Remove messages beyond the limit
+    virtual bool cacheChatList(const std::string& userId, const std::vector<ChatListItem>& chats) = 0;
+    virtual std::vector<ChatListItem> getCachedChatList(const std::string& userId) = 0;
 };

@@ -17,6 +17,10 @@ public:
     
     void getMessages(const std::string& user_id, const std::string& partner_id, int limit, int offset, std::function<void(std::vector<Message>)> callback) override;
 
+    void getChats(const std::string& userId, std::function<void(bool success, std::vector<ChatListItem>)> callback);
+
+    void searchUsers(const std::string& userId, const std::string& query, std::function<void(std::vector<ChatListItem>)> callback) override;
+
 private:
     AsyncNetworkClient& m_client;
 };

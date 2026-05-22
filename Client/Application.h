@@ -17,6 +17,7 @@
 #include "GetUsersUseCase.h"
 #include "SendMessageUseCase.h"
 #include "GetMessagesUseCase.h"
+#include "GetChatsUseCase.h"
 
 #include "ISendMessageHandler.h"
 #include <memory>
@@ -68,6 +69,7 @@ private:
     std::unique_ptr<GetUsersUseCase> m_get_users_uc;        ///< Retrieve user list use case.
     std::unique_ptr<SendMessageUseCase> m_send_uc;          ///< Send message use case.
     std::unique_ptr<GetMessagesUseCase> m_get_messages_uc;  ///< Get messages use case.
+    std::unique_ptr<GetChatsUseCase> m_get_chats_uc;
 
     // UI components
     DockableWindowsManager m_dock_manager;                  ///< Docking layout manager.
@@ -78,6 +80,7 @@ private:
     bool m_logged_in = false;                               ///< Whether a user is currently logged in.
     std::string m_current_user_id;                          ///< ID of the logged-in user.
     std::string m_current_username;
+    std::string m_current_chat_partner_id;
 
     std::shared_ptr<ISendMessageHandler> m_send_handler;
 };

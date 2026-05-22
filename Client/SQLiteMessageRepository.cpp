@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <chrono>
 #include "LogMacros.h"
+#include "ChatListItem.h"
 
 // Convert enum to int
 static int statusToInt(MessageStatus message_status) {
@@ -235,22 +236,19 @@ User SQLiteMessageRepository::rowToUser(sqlite3_stmt* stmt) {
 ///////////////////////
 
 bool SQLiteMessageRepository::saveMessage(const Message& msg) {
-    // Query.
     const char* sql_query = R"(
-        INSERT INTO messages (id, sender_id, receiver_id, text, timestamp, status)
+        INSERT OR REPLACE INTO messages (id, sender_id, receiver_id, text, timestamp, status)
         VALUES (?, ?, ?, ?, ?, ?);
     )";
-
-    // Compile sql text to byte code.
     sqlite3_stmt* stmt;
-    if (sqlite3_prepare_v2(m_db, sql_query, -1, &stmt, nullptr) != SQLITE_OK)
+    if (sqlite3_prepare_v2(m_db, sql_query, -1, &stmt, nullptr) != SQLITE_OK) {
+        LOG_ERROR("saveMessage: prepare failed: {}", sqlite3_errmsg(m_db));
         return false;
+    }
 
-    // Get timestamp
     sqlite3_int64 timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(
         msg.timestamp.time_since_epoch()).count();
 
-    // Bind params (instaead of ? symbols).
     sqlite3_bind_text(stmt, 1, msg.id.c_str(), -1, SQLITE_TRANSIENT);
     sqlite3_bind_text(stmt, 2, msg.sender_id.c_str(), -1, SQLITE_TRANSIENT);
     sqlite3_bind_text(stmt, 3, msg.receiver_id.c_str(), -1, SQLITE_TRANSIENT);
@@ -258,12 +256,11 @@ bool SQLiteMessageRepository::saveMessage(const Message& msg) {
     sqlite3_bind_int64(stmt, 5, timestamp);
     sqlite3_bind_int(stmt, 6, statusToInt(msg.status));
 
-    // Execute query.
     bool ok = (sqlite3_step(stmt) == SQLITE_DONE);
-
-    // Free memory.
+    if (!ok) {
+        LOG_ERROR("saveMessage: step failed: {}", sqlite3_errmsg(m_db));
+    }
     sqlite3_finalize(stmt);
-
     return ok;
 }
 
@@ -429,15 +426,27 @@ bool SQLiteMessageRepository::createTables() {
     )";
 
     const char* messages_table = R"(
-        CREATE TABLE IF NOT EXISTS messages (
-            id TEXT PRIMARY KEY,
-            sender_id TEXT NOT NULL,
-            receiver_id TEXT NOT NULL,
-            text TEXT NOT NULL,
-            timestamp INTEGER NOT NULL,
-            status INTEGER DEFAULT 0,
-            FOREIGN KEY (sender_id) REFERENCES users(id),
-            FOREIGN KEY (receiver_id) REFERENCES users(id)
+    CREATE TABLE IF NOT EXISTS messages (
+        id TEXT PRIMARY KEY,
+        sender_id TEXT NOT NULL,
+        receiver_id TEXT NOT NULL,
+        text TEXT NOT NULL,
+        timestamp INTEGER NOT NULL,
+        status INTEGER DEFAULT 0
+        );
+    )";
+
+    const char* chat_cache_table = R"(
+        CREATE TABLE IF NOT EXISTS chat_cache (
+            user_id TEXT NOT NULL,
+            partner_id TEXT NOT NULL,
+            username TEXT,
+            display_name TEXT,
+            is_online INTEGER DEFAULT 0,
+            last_message TEXT,
+            last_message_timestamp INTEGER,
+            last_message_status INTEGER DEFAULT 0,
+            PRIMARY KEY (user_id, partner_id)
         );
     )";
 
@@ -447,6 +456,7 @@ bool SQLiteMessageRepository::createTables() {
 
     return ExecuteSQLWithLogging(users_table) &&
         ExecuteSQLWithLogging(messages_table) &&
+        ExecuteSQLWithLogging(chat_cache_table) &&
         ExecuteSQLWithLogging(index1) &&
         ExecuteSQLWithLogging(index2) &&
         ExecuteSQLWithLogging(index3);
@@ -459,6 +469,83 @@ bool SQLiteMessageRepository::ExecuteSQLWithLogging(const char* sql)
         LOG_ERROR("SQL error in [{}]: {}", sql, error_message);
         sqlite3_free(error_message);
         return false;
+    }
+    return true;
+}
+
+bool SQLiteMessageRepository::cacheChatList(const std::string& userId, const std::vector<ChatListItem>& chats) {
+    const char* delSql = "DELETE FROM chat_cache WHERE user_id = ?;";
+    sqlite3_stmt* delStmt;
+    if (sqlite3_prepare_v2(m_db, delSql, -1, &delStmt, nullptr) == SQLITE_OK) {
+        sqlite3_bind_text(delStmt, 1, userId.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_step(delStmt);
+        sqlite3_finalize(delStmt);
+    }
+
+    const char* insSql = R"(
+        INSERT INTO chat_cache (user_id, partner_id, username, display_name, is_online,
+            last_message, last_message_timestamp, last_message_status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+    )";
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(m_db, insSql, -1, &stmt, nullptr) != SQLITE_OK)
+        return false;
+
+    if (sqlite3_prepare_v2(m_db, insSql, -1, &stmt, nullptr) != SQLITE_OK) {
+        LOG_ERROR("cacheChatList prepare failed: {}", sqlite3_errmsg(m_db));
+        return false;
+    }
+
+    for (const auto& chat : chats) {
+        sqlite3_bind_text(stmt, 1, userId.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 2, chat.user.id.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 3, chat.user.username.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 4, chat.user.display_name.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_int(stmt, 5, chat.user.is_online ? 1 : 0);
+        sqlite3_bind_text(stmt, 6, chat.last_message.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_int64(stmt, 7, std::chrono::duration_cast<std::chrono::milliseconds>(chat.last_message_time.time_since_epoch()).count());
+        sqlite3_bind_int(stmt, 8, static_cast<int>(chat.last_message_status));
+        if (sqlite3_step(stmt) != SQLITE_DONE) {
+            // eerooer
+        }
+        sqlite3_reset(stmt);
+    }
+    sqlite3_finalize(stmt);
+    return true;
+}
+
+std::vector<ChatListItem> SQLiteMessageRepository::getCachedChatList(const std::string& userId) {
+    std::vector<ChatListItem> result;
+    const char* sql = "SELECT partner_id, username, display_name, is_online, last_message, last_message_timestamp, last_message_status FROM chat_cache WHERE user_id = ? ORDER BY last_message_timestamp DESC;";
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+
+        if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+            LOG_ERROR("getCachedChatList prepare failed: {}", sqlite3_errmsg(m_db));
+            return result;
+        }
+
+        sqlite3_bind_text(stmt, 1, userId.c_str(), -1, SQLITE_TRANSIENT);
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            ChatListItem item;
+            item.user.id = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+            item.user.username = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+            item.user.display_name = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+            item.user.is_online = sqlite3_column_int(stmt, 3) != 0;
+            item.last_message = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
+            sqlite3_int64 ts = sqlite3_column_int64(stmt, 5);
+            item.last_message_time = ts > 0 ? std::chrono::system_clock::time_point(std::chrono::milliseconds(ts)) : std::chrono::system_clock::time_point::min();
+            item.last_message_status = static_cast<MessageStatus>(sqlite3_column_int(stmt, 6));
+            result.push_back(item);
+        }
+        sqlite3_finalize(stmt);
+    }
+    return result;
+}
+
+bool SQLiteMessageRepository::saveMessages(const std::vector<Message>& messages) {
+    for (const auto& msg : messages) {
+        if (!saveMessage(msg)) return false;
     }
     return true;
 }

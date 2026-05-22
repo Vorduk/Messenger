@@ -2,11 +2,17 @@
 #include "imgui.h"
 #include "LogMacros.h"
 
-ChatListWindow::ChatListWindow(GetUsersUseCase& get_users_uc, const std::string& current_user_id)
-    : m_get_users_uc(get_users_uc), m_current_user_id(current_user_id)
+ChatListWindow::ChatListWindow(GetUsersUseCase& get_users_uc,
+    GetChatsUseCase& get_chats_uc,
+    IMessageRepository& local_repo,
+    const std::string& current_user_id)
+    : m_get_users_uc(get_users_uc)
+    , m_get_chats_uc(get_chats_uc)
+    , m_local_repo(local_repo)
+    , m_current_user_id(current_user_id)
 {
     m_current_style = StyleManager::getInstance().getChatListWindowStyle();
-    refreshUsers();
+    loadChats(); // Load existing chats on startup (from server or cache)
 }
 
 void ChatListWindow::setOnUserSelected(std::function<void(const User&)> callback) {
@@ -14,33 +20,118 @@ void ChatListWindow::setOnUserSelected(std::function<void(const User&)> callback
 }
 
 void ChatListWindow::refreshUsers() {
-    m_get_users_uc.execute(m_current_user_id,
-        [this](std::vector<ChatListItem> items) {
-            m_items = std::move(items);
-            LOG_INFO("User list updated, count: {}", m_items.size());
+    // Called from outside, e.g. after reconnection or manual refresh
+    loadChats();
+}
+
+void ChatListWindow::loadChats() {
+    m_get_chats_uc.execute(m_current_user_id, [this](bool success, std::vector<ChatListItem> items) {
+        if (success) {
+            // Сервер ответил, даже если список пуст
+            m_is_offline = false;
+            m_chats = std::move(items);
+            m_local_repo.cacheChatList(m_current_user_id, m_chats); // кешируем в том числе пустой список
+            LOG_INFO("Chats loaded from server, count: {}", m_chats.size());
+        }
+        else {
+            // Сетевая ошибка — пробуем загрузить из кеша
+            auto cached = m_local_repo.getCachedChatList(m_current_user_id);
+            if (!cached.empty()) {
+                m_chats = std::move(cached);
+                m_is_offline = true;
+                LOG_INFO("Chats loaded from local cache, count: {}", m_chats.size());
+            }
+            else {
+                m_chats.clear();
+                m_is_offline = true;  // действительно офлайн и кеша нет
+            }
+        }
+        });
+}
+
+void ChatListWindow::searchUsers(const std::string& query) {
+    if (query.empty()) {
+        m_search_results.clear();
+        return;
+    }
+    // Search users on server by username or display_name
+    m_get_users_uc.search(m_current_user_id, query, [this](std::vector<ChatListItem> items) {
+        m_search_results = std::move(items);
+        LOG_INFO("User search results updated, count: {}", m_search_results.size());
         });
 }
 
 void ChatListWindow::render() {
-    // Use refresh button text and colors from style
-    ImGui::PushStyleColor(ImGuiCol_Button, m_current_style.refresh_button_color);
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, m_current_style.refresh_button_hover_color);
 
-    if (ImGui::Button(m_current_style.refresh_button_text.c_str())) {
-        refreshUsers();
+    double now = ImGui::GetTime();
+    if (now - m_last_chats_refresh > 8.0) {
+        m_last_chats_refresh = now;
+        loadChats();
     }
 
-    ImGui::PopStyleColor(2);
+    renderSearchBar();
+    renderTabs();
 
     ImGui::Separator();
 
-    if (m_items.empty()) {
-        ImGui::PushStyleColor(ImGuiCol_Text, m_current_style.empty_chat_list_text_style.color);
-        ImGui::Text("%s", m_current_style.empty_chat_list_text.c_str());
-        ImGui::PopStyleColor();
+    // Show offline indicator when using cached data
+    if (m_is_offline) {
+        ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "Offline - showing cached data");
+    }
+
+    if (m_activeTab == Tab::Chats) {
+        renderChatList();
     }
     else {
-        for (const auto& item : m_items) {
+        renderUserList();
+    }
+}
+
+void ChatListWindow::renderSearchBar() {
+    // Search input takes most of the width, leaving room for the Search button
+    ImGui::PushItemWidth(-ImGui::CalcTextSize("Search").x - 15);
+    ImGui::InputTextWithHint("##SearchField", "Search chats, users...", m_search_buffer, IM_ARRAYSIZE(m_search_buffer));
+    ImGui::PopItemWidth();
+    ImGui::SameLine();
+    if (ImGui::Button("Search")) {
+        if (m_activeTab == Tab::Chats) {
+            // Local filter of existing chats by search buffer
+            // TODO: implement filtering in renderChatList based on m_search_buffer
+        }
+        else {
+            searchUsers(m_search_buffer);
+        }
+    }
+}
+
+void ChatListWindow::renderTabs() {
+    // Tab buttons to switch between Chats and Users
+    if (ImGui::Button("Chats")) m_activeTab = Tab::Chats;
+    ImGui::SameLine();
+    if (ImGui::Button("Users")) m_activeTab = Tab::Users;
+}
+
+void ChatListWindow::renderChatList() {
+    if (m_chats.empty()) {
+        ImGui::Text("No chats yet. Search for users to start messaging.");
+    }
+    else {
+        for (const auto& chat : m_chats) {
+            renderUserBlock(chat);
+            ImGui::Spacing();
+        }
+    }
+}
+
+void ChatListWindow::renderUserList() {
+    if (m_search_results.empty() && strlen(m_search_buffer) == 0) {
+        ImGui::Text("Type a username to search.");
+    }
+    else if (m_search_results.empty()) {
+        ImGui::Text("No users found.");
+    }
+    else {
+        for (const auto& item : m_search_results) {
             renderUserBlock(item);
             ImGui::Spacing();
         }
@@ -59,7 +150,7 @@ void ChatListWindow::renderUserBlock(const ChatListItem& item)
     float block_height = m_current_style.user_block_style.size.y;
     ImGui::BeginChild(block_id.c_str(), ImVec2(block_width, block_height), false, ImGuiWindowFlags_NoScrollbar);
 
-    // Invicible button for user selection
+    // Invisible button for user selection
     ImGui::SetCursorPos(ImVec2(0, 0));
     if (ImGui::InvisibleButton(("select_" + user.id).c_str(), ImVec2(block_width, block_height))) {
         if (m_on_selected) {
@@ -126,16 +217,17 @@ void ChatListWindow::renderUserBlock(const ChatListItem& item)
         ImGui::PopStyleColor();
     }
 
+    // Render message status indicator at bottom-right of the block
     if (!item.last_message.empty() && item.last_message_status != MessageStatus::Default) {
         std::string status_text = messageStatusToString(item.last_message_status);
         if (!status_text.empty()) {
             ImVec4 status_color;
             switch (item.last_message_status) {
-            case MessageStatus::Sending:   status_color = ImVec4(0.8f, 0.8f, 0.0f, 1.0f); break; // желтый
-            case MessageStatus::Sent:      status_color = ImVec4(0.7f, 0.7f, 0.7f, 1.0f); break; // серый
-            case MessageStatus::Delivered: status_color = ImVec4(0.7f, 0.7f, 0.7f, 1.0f); break; // серый
-            case MessageStatus::Read:      status_color = ImVec4(0.3f, 0.6f, 1.0f, 1.0f); break; // синий
-            case MessageStatus::Failed:    status_color = ImVec4(1.0f, 0.2f, 0.2f, 1.0f); break; // красный
+            case MessageStatus::Sending:   status_color = ImVec4(0.8f, 0.8f, 0.0f, 1.0f); break; // yellow
+            case MessageStatus::Sent:      status_color = ImVec4(0.7f, 0.7f, 0.7f, 1.0f); break; // gray
+            case MessageStatus::Delivered: status_color = ImVec4(0.7f, 0.7f, 0.7f, 1.0f); break; // gray
+            case MessageStatus::Read:      status_color = ImVec4(0.3f, 0.6f, 1.0f, 1.0f); break; // blue
+            case MessageStatus::Failed:    status_color = ImVec4(1.0f, 0.2f, 0.2f, 1.0f); break; // red
             default:                       status_color = ImVec4(0.7f, 0.7f, 0.7f, 1.0f); break;
             }
 
@@ -159,7 +251,7 @@ void ChatListWindow::renderUserBlock(const ChatListItem& item)
 
 void ChatListWindow::renderUserAvatar(const User& user, float size)
 {
-    ImDrawList* draw_list = ImGui::GetWindowDrawList(); // Get draw list associated to current window , to append drawing primitives.
+    ImDrawList* draw_list = ImGui::GetWindowDrawList(); // Get draw list associated to current window, to append drawing primitives.
 
     // Find position of avatar circle center.
     ImVec2 cursor_screen = ImGui::GetCursorScreenPos();
@@ -254,5 +346,25 @@ std::string ChatListWindow::formatLastMessageTime(const std::chrono::system_cloc
     }
     else {   // year_diff >= 2
         return std::to_string(year_diff) + " years ago";
+    }
+}
+
+void ChatListWindow::updateLastMessage(const std::string& partner_id,
+    const std::string& text,
+    const std::chrono::system_clock::time_point& timestamp) {
+    for (auto& chat : m_chats) {
+        if (chat.user.id == partner_id) {
+            chat.last_message = text;
+            chat.last_message_time = timestamp;
+            chat.last_message_status = MessageStatus::Sent;
+            if (&chat != &m_chats.front()) {
+                auto item = std::move(chat);
+                m_chats.erase(std::remove_if(m_chats.begin(), m_chats.end(),
+                    [&partner_id](const ChatListItem& c) { return c.user.id == partner_id; }),
+                    m_chats.end());
+                m_chats.insert(m_chats.begin(), std::move(item));
+            }
+            break;
+        }
     }
 }
