@@ -64,6 +64,10 @@ void Application::stop() { m_running = false; }
 
 void Application::onMessageSent(const std::string& message_id, const std::string& confirmation) {
     if (m_chat_window) m_chat_window->AddConfirmation(confirmation);
+
+    if (m_chat_list_window) {
+        m_chat_list_window->updateLastMessage(m_current_chat_partner_id, confirmation, std::chrono::system_clock::now());
+    }
 }
 
 void Application::onError(const std::string& error) {
@@ -81,7 +85,7 @@ void Application::onUserLoggedIn(const std::string& user_id, const std::string& 
     // Send use case
     m_send_uc = std::make_unique<SendMessageUseCase>(m_server_api, *this, m_local_repo);
     // Get messages use case
-    m_get_messages_uc = std::make_unique<GetMessagesUseCase>(m_server_api);
+    m_get_messages_uc = std::make_unique<GetMessagesUseCase>(m_server_api, m_local_repo);
 
     // Chat windows
     m_chat_window = std::make_unique<ChatWindow>();
@@ -100,7 +104,14 @@ void Application::onUserLoggedIn(const std::string& user_id, const std::string& 
 
     m_chat_window->SetMessageLoader(m_get_messages_uc.get());
 
-    m_chat_list_window = std::make_unique<ChatListWindow>(*m_get_users_uc, m_current_user_id);
+    m_get_chats_uc = std::make_unique<GetChatsUseCase>(m_server_api);
+
+    m_chat_list_window = std::make_unique<ChatListWindow>(
+        *m_get_users_uc,
+        *m_get_chats_uc,
+        m_local_repo, 
+        m_current_user_id
+    );
     m_chat_list_window->setOnUserSelected([this](const User& user) { selectContact(user); });
 
     m_dock_manager.addWindow(m_chat_window.get());
@@ -116,6 +127,8 @@ void Application::onUserLoggedIn(const std::string& user_id, const std::string& 
 }
 
 void Application::selectContact(const User& user) {
+    m_current_chat_partner_id = user.id;
+
     if (m_chat_window) {
         m_chat_window->SetUsers(m_current_user_id, user.id, user.display_name);
         
