@@ -39,7 +39,7 @@ public:
      * or an error JSON like `{"status":"error","message":"..."}` on failure.
      */
     using ResponseCallback = std::function<void(const std::string& response)>;
-    
+
     AsyncNetworkClient(const std::string& server_address, int port);
     ~AsyncNetworkClient();
 

@@ -7,7 +7,8 @@
 
 class LoginWindow : public DockableWindow {
 public:
-    using LoginCallback = std::function<void(const std::string& user_id)>;
+    /// Callback receives user_id and username after successful login/register
+    using LoginCallback = std::function<void(const std::string& user_id, const std::string& username)>;
     LoginWindow(LoginUseCase& login_uc, RegisterUseCase& register_uc, LoginCallback on_login);
     const char* getName() const override { return "Login"; }
     void render() override;

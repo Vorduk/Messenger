@@ -68,6 +68,7 @@ bool TcpClient::connectToServer() {
 #endif
     
     m_is_server_connected = true;
+    setTimeouts(5000, 5000);
     return true;
 }
 
@@ -77,11 +78,17 @@ std::string TcpClient::sendRequest(const std::string& request_json) {
     std::string data = request_json + "\n"; // Mark the end of message.
 
     // Send data.
+    int sent = 0;
 #ifdef _WIN32
-    send(m_socket, data.c_str(), data.size(), 0);
+    sent = send(m_socket, data.c_str(), static_cast<int>(data.size()), 0);
 #else
-    send(m_socket, data.c_str(), data.size(), 0);
+    sent = send(m_socket, data.c_str(), data.size(), MSG_NOSIGNAL); // MSG_NOSIGNAL prevents SIGPIPE
 #endif
+    if (sent <= 0) {
+        // Send failed – server likely disconnected
+        disconnect();
+        return R"({"status":"error","message":"Send failed, disconnected"})";
+    }
 
     // Get response.
     std::string response;

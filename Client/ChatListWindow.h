@@ -15,12 +15,10 @@ public:
     ChatListWindow(GetUsersUseCase& get_users_uc, const std::string& current_user_id);
     const char* getName() const override { return "Chat List"; }
     void render() override;
-
+    void refreshUsers();
     void setOnUserSelected(std::function<void(const User&)> callback);
 
 private:
-    void refreshUsers();
-
     // Render.
     void renderUserBlock(const ChatListItem& item);
     void renderUserAvatar(const User& user, float size);

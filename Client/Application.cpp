@@ -1,7 +1,7 @@
-// Application.cpp
 #include "Application.h"
 #include "imgui.h"
 #include "UUIDGenerator.h"
+#include "LogMacros.h"
 
 Application::Application(int window_width, int window_height, const std::string& window_title)
     : m_window(window_width, window_height, window_title)
@@ -19,10 +19,29 @@ Application::Application(int window_width, int window_height, const std::string&
 
     // Login window
     m_login_window = std::make_unique<LoginWindow>(*m_login_uc, *m_register_uc,
-        [this](const std::string& user_id) { onUserLoggedIn(user_id); });
+        [this](const std::string& user_id, const std::string& username) { onUserLoggedIn(user_id, username); });
     m_dock_manager.addWindow(m_login_window.get());
     using Node = DockLayoutNode;
     m_dock_manager.setCurrentLayout(Node::makeWindow("Login"));
+
+    // Set up automatic re-login after reconnection
+    m_network.setReconnectCallback([this]() {
+        if (!m_current_username.empty()) {
+            // Try to re-login with the same username
+            m_login_uc->execute(m_current_username,
+                [this](bool success, const std::string& user_id_or_error) {
+                    if (success) {
+                        m_current_user_id = user_id_or_error;
+                        LOG_INFO("Re-logged in after reconnection");
+                        // Refresh chat list to get updated online statuses
+                        if (m_chat_list_window) m_chat_list_window->refreshUsers();
+                    }
+                    else {
+                        LOG_ERROR("Re-login after reconnection failed: {}", user_id_or_error);
+                    }
+                });
+        }
+        });
 }
 
 Application::~Application() { stop(); }
@@ -51,8 +70,9 @@ void Application::onError(const std::string& error) {
     if (m_chat_window) m_chat_window->AddError(error);
 }
 
-void Application::onUserLoggedIn(const std::string& user_id) {
+void Application::onUserLoggedIn(const std::string& user_id, const std::string& username) {
     m_current_user_id = user_id;
+    m_current_username = username;  // Save for reconnection
     m_logged_in = true;
 
     m_dock_manager.removeWindow("Login");

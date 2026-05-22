@@ -32,11 +32,17 @@ public:
      * @return Server response as a string, or empty string / error JSON on failure.
      */
 	std::string sendRequest(const std::string& request_json);
+	bool isConnected() const;
+	void setTimeouts(int send_timeout_ms, int recv_timeout_ms);
+	void disconnect();
 
 private:
+	void closeSocket();
+
 	int m_socket = -1;					///< Socket descriptor, (-1 means not created).
 	std::string m_server_address;		///< Server ip or name.
 	int m_port;							///< Port.
 	bool m_is_server_connected = false;	///< Connection flag.
-    std::string m_leftover_buffer;      ///< Buffer for the bytes that left after /n after request
+    std::string m_leftover_buffer;      ///< Buffer for the bytes that left after /n after request	
 };
+

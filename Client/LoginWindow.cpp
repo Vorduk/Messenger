@@ -24,7 +24,7 @@ void LoginWindow::render() {
             m_login_uc.execute(m_username,
                 [this](bool success, const std::string& userIdOrError) {
                     m_is_waiting = false;
-                    if (success) m_on_login(userIdOrError);
+                    if (success) m_on_login(userIdOrError, m_username); // Pass username for reconnection
                     else m_error_message = userIdOrError;
                 });
         }
@@ -40,7 +40,7 @@ void LoginWindow::render() {
             m_register_uc.execute(m_username,
                 [this](bool success, const std::string& userIdOrError) {
                     m_is_waiting = false;
-                    if (success) m_on_login(userIdOrError);
+                    if (success) m_on_login(userIdOrError, m_username); // Pass username for reconnection
                     else m_error_message = userIdOrError;
                 });
         }
