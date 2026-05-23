@@ -488,8 +488,6 @@ bool SQLiteMessageRepository::cacheChatList(const std::string& userId, const std
         VALUES (?, ?, ?, ?, ?, ?, ?, ?);
     )";
     sqlite3_stmt* stmt;
-    if (sqlite3_prepare_v2(m_db, insSql, -1, &stmt, nullptr) != SQLITE_OK)
-        return false;
 
     if (sqlite3_prepare_v2(m_db, insSql, -1, &stmt, nullptr) != SQLITE_OK) {
         LOG_ERROR("cacheChatList prepare failed: {}", sqlite3_errmsg(m_db));
@@ -519,12 +517,7 @@ std::vector<ChatListItem> SQLiteMessageRepository::getCachedChatList(const std::
     const char* sql = "SELECT partner_id, username, display_name, is_online, last_message, last_message_timestamp, last_message_status FROM chat_cache WHERE user_id = ? ORDER BY last_message_timestamp DESC;";
     sqlite3_stmt* stmt;
     if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
-
-        if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
-            LOG_ERROR("getCachedChatList prepare failed: {}", sqlite3_errmsg(m_db));
-            return result;
-        }
-
+    
         sqlite3_bind_text(stmt, 1, userId.c_str(), -1, SQLITE_TRANSIENT);
         while (sqlite3_step(stmt) == SQLITE_ROW) {
             ChatListItem item;
@@ -539,6 +532,10 @@ std::vector<ChatListItem> SQLiteMessageRepository::getCachedChatList(const std::
             result.push_back(item);
         }
         sqlite3_finalize(stmt);
+    }
+    else {
+        LOG_ERROR("getCachedChatList prepare failed: {}", sqlite3_errmsg(m_db));
+        return result;      
     }
     return result;
 }
