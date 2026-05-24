@@ -28,6 +28,7 @@
  */
 class Application : public IApplication, public ISendMessagePresenter {
 public:
+
     /**
      * @brief Construct the application.
      * @param width  Initial client area width.
@@ -40,11 +41,23 @@ public:
     void run() override;    ///< Run main loop.
     void stop() override;   ///< Stop main loop.
 
+
+
+
+
+
+
+
+
     void onMessageSent(const std::string& message_id, const std::string& confirmation) override; ///< Presenter callback for success.
     void onError(const std::string& error) override;                                              ///< Presenter callback for errors.
 
 private:
+
     void renderUI();                                        ///< Render all registered windows.
+
+
+
 
     void onUserLoggedIn(const std::string& user_id, const std::string& username);        ///< Called after successful login/register.
     void selectContact(const User& user);                   ///< Handle contact selection from ChatListWindow.

@@ -2,6 +2,11 @@
 #include "imgui.h"
 #include <string>
 
+/**
+ * @brief Visual layout and appearance for a rectangular UI block.
+ * Contains size, background colors, border and shadow parameters,
+ * and spacing values. 
+ */
 struct BlockStyle {
     ImVec2 size;
     ImVec4 background;
@@ -14,13 +19,21 @@ struct BlockStyle {
     float padding;
 };
 
+/**
+ * @brief Text rendering options.
+ * Includes color, font size, weight (bold) and alignment (0..1 for x/y). 
+ */
 struct TextStyle {
     ImVec4 color;
     float font_size;
     bool bold;
-    ImVec2 alignment; // 0-1 for x and y
+    ImVec2 alignment;
 };
 
+/**
+ * @brief Appearance settings for a circular/avatar element.
+ * Defines diameter, background and border colors, border width and text color. 
+ */
 struct AvatarStyle {
     float size;
     ImVec4 background_color;
@@ -29,6 +42,9 @@ struct AvatarStyle {
     ImVec4 text_color;
 };
 
+/**
+ * @brief All style settings used by the chat list window*
+ */
 struct ChatListWindowStyle {
     TextStyle main_text_style;
     std::string refresh_button_text;
@@ -49,17 +65,32 @@ struct ChatListWindowStyle {
 };
 
 /**
- * @brief Singleton style manager.
+ * @brief Singleton manager that provides UI styles.
+ * 
+ * getChatListWindowStyle() and other style getters: The returned reference refers to the manager's
+ * internal ChatListWindowStyle; modifying the manager's style (via its
+ * setters) will immediately affect any client windows holding a reference to it.
  */
 class StyleManager {
 public:
     static StyleManager& getInstance();
 
-    ChatListWindowStyle getChatListWindowStyle() const;
+    // Get style reference for particular window.
+    const ChatListWindowStyle& getChatListWindowStyle() const;
+    //const ChatListWindowStyle& getLoginWindowStyle() const; // todo
+    //const ChatListWindowStyle& getChatWindowStyle() const; // todo
 
 private:
     StyleManager() = default;
     ~StyleManager() = default;
     StyleManager(const StyleManager&) = delete;
     StyleManager& operator=(const StyleManager&) = delete;
+
+    // Fill the windows style structures.
+    void setChatListWindowStyle();
+    // void setLoginWindowStyle(); // todo
+    // void setChatWindowStyle(); // todo
+
+    // All windows styles stored here.
+    ChatListWindowStyle m_chat_list_style;
 };

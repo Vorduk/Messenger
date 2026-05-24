@@ -2,15 +2,23 @@
 #include "imgui.h"
 #include "UUIDGenerator.h"
 #include "LogMacros.h"
+#include "StyleManager.h"
 
 Application::Application(int window_width, int window_height, const std::string& window_title)
     : m_window(window_width, window_height, window_title)
+
     , m_imgui_layer(m_window)
     , m_network("127.0.0.1", 8080)
     , m_server_api(m_network)
     , m_local_repo("messenger.db")
     , m_user_manager(m_local_repo)
 {
+
+
+
+
+
+
     // Use cases
     m_login_uc = std::make_unique<LoginUseCase>(m_server_api);
     m_register_uc = std::make_unique<RegisterUseCase>(m_server_api);
@@ -44,23 +52,27 @@ Application::Application(int window_width, int window_height, const std::string&
         });
 }
 
-Application::~Application() { stop(); }
+Application::~Application() { 
+    stop(); 
+}
 
 void Application::run() {
     m_running = true;
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);   // Initial color.
     while (m_running && !m_window.shouldClose()) {
-        m_window.pollEvents();
-        m_network.pollCallbacks();       // Process server responses in main thread
+        m_window.pollEvents();          // Glfw window poll events.
+        m_network.pollCallbacks();      // Process server responses.
         glClear(GL_COLOR_BUFFER_BIT);
-        m_imgui_layer.beginFrame();
-        renderUI();
-        m_imgui_layer.endFrame();
-        m_window.swapBuffers();
+        m_imgui_layer.beginFrame();     // Imgui begin frame
+        renderUI();                     // Imgui windows begin, render and end.
+        m_imgui_layer.endFrame();       // Imgui begin frame.
+        m_window.swapBuffers();         // Swap screen buffers.
     }
 }
 
-void Application::stop() { m_running = false; }
+void Application::stop() { 
+    m_running = false; 
+}
 
 void Application::onMessageSent(const std::string& message_id, const std::string& confirmation) {
     if (m_chat_window) m_chat_window->AddConfirmation(confirmation);
@@ -72,6 +84,12 @@ void Application::onMessageSent(const std::string& message_id, const std::string
 
 void Application::onError(const std::string& error) {
     if (m_chat_window) m_chat_window->AddError(error);
+}
+
+void Application::renderUI() {
+    m_dock_manager.begin();
+    m_dock_manager.renderWindows();
+    m_dock_manager.end();
 }
 
 void Application::onUserLoggedIn(const std::string& user_id, const std::string& username) {
@@ -106,7 +124,10 @@ void Application::onUserLoggedIn(const std::string& user_id, const std::string& 
 
     m_get_chats_uc = std::make_unique<GetChatsUseCase>(m_server_api);
 
+    StyleManager& style_manager = StyleManager::getInstance(); 
+
     m_chat_list_window = std::make_unique<ChatListWindow>(
+        style_manager.getChatListWindowStyle(),
         *m_get_users_uc,
         *m_get_chats_uc,
         m_local_repo, 
@@ -139,8 +160,3 @@ void Application::selectContact(const User& user) {
     }
 }
 
-void Application::renderUI() {
-    m_dock_manager.begin();
-    m_dock_manager.renderWindows();
-    m_dock_manager.end();
-}

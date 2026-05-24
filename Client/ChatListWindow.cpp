@@ -2,17 +2,19 @@
 #include "imgui.h"
 #include "LogMacros.h"
 
-ChatListWindow::ChatListWindow(GetUsersUseCase& get_users_uc,
-    GetChatsUseCase& get_chats_uc,
-    IMessageRepository& local_repo,
-    const std::string& current_user_id)
-    : m_get_users_uc(get_users_uc)
+ChatListWindow::ChatListWindow(const ChatListWindowStyle& current_style, GetUsersUseCase& get_users_uc, GetChatsUseCase& get_chats_uc, IMessageRepository& local_repo, const std::string& current_user_id)
+    : m_current_style(current_style)
+    , m_get_users_uc(get_users_uc)
     , m_get_chats_uc(get_chats_uc)
     , m_local_repo(local_repo)
     , m_current_user_id(current_user_id)
 {
-    m_current_style = StyleManager::getInstance().getChatListWindowStyle();
     loadChats(); // Load existing chats on startup (from server or cache)
+}
+
+const char* ChatListWindow::getName() const
+{
+    return "Chat List";
 }
 
 void ChatListWindow::setOnUserSelected(std::function<void(const User&)> callback) {

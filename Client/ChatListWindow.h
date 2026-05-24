@@ -15,8 +15,8 @@
  */
 class ChatListWindow : public DockableWindow {
 public:
-    ChatListWindow(GetUsersUseCase& get_users_uc, GetChatsUseCase& get_chats_uc, IMessageRepository& local_repo, const std::string& current_user_id);
-    const char* getName() const override { return "Chat List"; }
+    ChatListWindow(const ChatListWindowStyle& current_style, GetUsersUseCase& get_users_uc, GetChatsUseCase& get_chats_uc, IMessageRepository& local_repo, const std::string& current_user_id);
+    const char* getName() const override;
     void render() override;
 
     void setOnUserSelected(std::function<void(const User&)> callback);
@@ -50,7 +50,7 @@ private:
     std::function<void(const User&)> m_on_selected;
 
     char m_search_buffer[256] = "";
-    ChatListWindowStyle m_current_style;
+    const ChatListWindowStyle& m_current_style;
 
     bool m_is_offline = false;
     double m_last_chats_refresh = 0.0;
