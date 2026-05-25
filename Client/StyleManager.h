@@ -77,6 +77,14 @@ struct ChatListWindowStyle {
     TextStyle search_hint_style;
     ImVec4 search_button_color;
     ImVec4 search_button_hover_color;
+    std::string no_chats_found_text;
+    TextStyle no_chats_found_text_style;
+    std::string empty_search_prompt_text;
+    TextStyle empty_search_prompt_text_style;
+    std::string no_users_found_text;       
+    TextStyle no_users_found_text_style;
+    std::string search_unavailable_text;
+    TextStyle search_unavailable_text_style;
 };
 
 /**

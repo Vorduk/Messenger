@@ -81,23 +81,27 @@ void ChatListWindow::updateLastMessage(const std::string& partner_id, const std:
         // Rotate the range [m_chats.begin(), it + 1) left by one position.
         std::rotate(m_chats.begin(), it, std::next(it));
     }
+
+    m_local_repo.cacheChatList(m_current_user_id, m_chats);
 }
 
 void ChatListWindow::searchUsers(const std::string& query) {
     if (query.empty()) {
         m_search_results.clear();
+        m_is_user_search_failed = false;
         return;
     }
-    // Search users on server by username or display_name
-    m_get_users_uc.search(m_current_user_id, query,  
+
+    m_get_users_uc.search(m_current_user_id, query,
         [this](bool success, std::vector<ChatListItem> items) {
             if (success) {
                 m_search_results = std::move(items);
+                m_is_user_search_failed = false;
                 LOG_INFO("User search results updated, count: {}", m_search_results.size());
             }
             else {
+                m_is_user_search_failed = true;
                 LOG_WARN("User search failed - server unreachable");
-                // Old search results remains.
             }
         }
     );
@@ -207,7 +211,9 @@ void ChatListWindow::renderTabs() {
 
 void ChatListWindow::renderChatList() {
     if (m_chats.empty()) {
-        ImGui::Text("No chats yet. Search for users to start messaging.");
+        ImGui::PushStyleColor(ImGuiCol_Text, m_current_style.no_chats_found_text_style.color);
+        ImGui::Text("%s", m_current_style.no_chats_found_text.c_str());
+        ImGui::PopStyleColor();
     }
     else {
         for (const ChatListItem& chat : m_chats) {
@@ -218,12 +224,23 @@ void ChatListWindow::renderChatList() {
 }
 
 void ChatListWindow::renderUserList() {
-    // Render of all found users.
     if (m_search_results.empty() && strlen(m_search_buffer) == 0) {
-        ImGui::Text("Type a username to search.");
+        // Empty search query
+        ImGui::PushStyleColor(ImGuiCol_Text, m_current_style.empty_search_prompt_text_style.color);
+        ImGui::Text("%s", m_current_style.empty_search_prompt_text.c_str());
+        ImGui::PopStyleColor();
+    }
+    else if (m_search_results.empty() && m_is_offline) {
+        // Server is unavailable
+        ImGui::PushStyleColor(ImGuiCol_Text, m_current_style.search_unavailable_text_style.color);
+        ImGui::Text("%s", m_current_style.search_unavailable_text.c_str());
+        ImGui::PopStyleColor();
     }
     else if (m_search_results.empty()) {
-        ImGui::Text("No users found.");
+        // Search complete, nothing found.
+        ImGui::PushStyleColor(ImGuiCol_Text, m_current_style.no_users_found_text_style.color);
+        ImGui::Text("%s", m_current_style.no_users_found_text.c_str());
+        ImGui::PopStyleColor();
     }
     else {
         for (const ChatListItem& item : m_search_results) {
@@ -252,12 +269,17 @@ void ChatListWindow::renderUserBlock(const ChatListItem& chat)
         }
     }
 
-    // Hover style.
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
-    ImVec2 win_pos = ImGui::GetWindowPos();
-    ImVec2 win_size = ImGui::GetWindowSize();
-    if (ImGui::IsWindowHovered()) {
-        draw_list->AddRectFilled(win_pos, ImVec2(win_pos.x + win_size.x, win_pos.y + win_size.y), ImGui::ColorConvertFloat4ToU32(m_current_style.user_block_style.background_hover));
+
+    // Hover style.
+    if (ImGui::IsItemHovered()) {
+        ImVec2 win_pos = ImGui::GetWindowPos();
+        ImVec2 win_size = ImGui::GetWindowSize();
+        draw_list->AddRectFilled(
+            win_pos,
+            ImVec2(win_pos.x + win_size.x, win_pos.y + win_size.y),
+            ImGui::ColorConvertFloat4ToU32(m_current_style.user_block_style.background_hover)
+        );
     }
 
     // Use padding from style for avatar position.

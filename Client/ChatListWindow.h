@@ -136,10 +136,13 @@ private:
     // Use cases.
     GetUsersUseCase& m_get_users_uc;
     GetChatsUseCase& m_get_chats_uc;
-    IMessageRepository& m_local_repo;
-    std::string m_current_user_id;
+
+    IMessageRepository& m_local_repo;   ///< Local cache.
+    std::string m_current_user_id;      ///< Id of current user.
 
     bool m_is_offline = false;          ///< True when showing cached data (server unreachable).
     double m_last_chats_refresh = 0.0;  ///< Timestamp of last auto-refresh (seconds from ImGui::GetTime()).
+
+    bool m_is_user_search_failed = false;    ///< User search failed
 
 };

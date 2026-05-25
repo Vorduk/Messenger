@@ -121,6 +121,34 @@ void StyleManager::setChatListWindowStyle()
     m_chat_list_style.search_hint_style.alignment = ImVec2(0.0f, 0.5f);
     m_chat_list_style.search_button_color = ImVec4(0.27f, 0.51f, 0.78f, 1.0f);
     m_chat_list_style.search_button_hover_color = ImVec4(0.35f, 0.61f, 0.88f, 1.0f);
+
+    // Empty state — chats
+    m_chat_list_style.no_chats_found_text = "No chats yet. Search for users to start messaging.";
+    m_chat_list_style.no_chats_found_text_style.color = ImVec4(0.6f, 0.6f, 0.6f, 1.0f);
+    m_chat_list_style.no_chats_found_text_style.font_size = 13.0f;
+    m_chat_list_style.no_chats_found_text_style.bold = false;
+    m_chat_list_style.no_chats_found_text_style.alignment = ImVec2(0.5f, 0.5f);
+
+    // Empty state — search prompt
+    m_chat_list_style.empty_search_prompt_text = "Type a username to search.";
+    m_chat_list_style.empty_search_prompt_text_style.color = ImVec4(0.6f, 0.6f, 0.6f, 1.0f);
+    m_chat_list_style.empty_search_prompt_text_style.font_size = 13.0f;
+    m_chat_list_style.empty_search_prompt_text_style.bold = false;
+    m_chat_list_style.empty_search_prompt_text_style.alignment = ImVec2(0.5f, 0.5f);
+
+    // Empty state — no results
+    m_chat_list_style.no_users_found_text = "No users found.";
+    m_chat_list_style.no_users_found_text_style.color = ImVec4(0.6f, 0.6f, 0.6f, 1.0f);
+    m_chat_list_style.no_users_found_text_style.font_size = 13.0f;
+    m_chat_list_style.no_users_found_text_style.bold = false;
+    m_chat_list_style.no_users_found_text_style.alignment = ImVec2(0.5f, 0.5f);
+
+    // Empty state — search unavailable
+    m_chat_list_style.search_unavailable_text = "Search unavailable while offline.";
+    m_chat_list_style.search_unavailable_text_style.color = ImVec4(1.0f, 0.5f, 0.0f, 1.0f);
+    m_chat_list_style.search_unavailable_text_style.font_size = 13.0f;
+    m_chat_list_style.search_unavailable_text_style.bold = false;
+    m_chat_list_style.search_unavailable_text_style.alignment = ImVec2(0.5f, 0.5f);
 }
 
 const ChatListWindowStyle& StyleManager::getChatListWindowStyle() const
