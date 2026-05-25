@@ -11,18 +11,46 @@
 
 
 /**
- * @brief ImGui window with list of chats.
+ * @brief ImGui window displaying the chat list and user search.
+ *
+ * Shows two tabs: "Chats" (existing conversations with last message preview,
+ * status, and timestamp) and "Users" (server-side search for starting new chats).
+ * Supports manual refresh via refreshUsers().
+ * All server calls are asynchronous and non-blocking.
  */
 class ChatListWindow : public DockableWindow {
 public:
+    /**
+     * @brief Constructs the chat list window.
+     * @param current_style Style settings for rendering.
+     * @param get_users_uc Use case for searching users.
+     * @param get_chats_uc Use case for loading chat list.
+     * @param local_repo Local storage for caching chats.
+     * @param current_user_id ID of the logged-in user.
+     */
     ChatListWindow(const ChatListWindowStyle& current_style, GetUsersUseCase& get_users_uc, GetChatsUseCase& get_chats_uc, IMessageRepository& local_repo, const std::string& current_user_id);
+
+    /** 
+     * @return Window title used by the docking system. 
+     */
     const char* getName() const override;
+
+    /** 
+     * @brief Renders the chat list UI. Called every frame. 
+     */
     void render() override;
 
+    /**
+     * @brief Sets the callback invoked when a user is selected.
+     * @param callback Receives the selected User object.
+     */
     void setOnUserSelected(std::function<void(const User&)> callback);
-    void refreshUsers();
 
-    void loadChats();
+    /**
+     * @brief Manually refreshes the chat list from server (or cache on failure).
+     * Also resets the auto-refresh timer.
+     */
+    void refreshUsers();
 
     /**
      * @brief Updates the last message for the chat with the given partner.
@@ -36,8 +64,13 @@ public:
     void updateLastMessage(const std::string& partner_id, const std::string& text, const std::chrono::system_clock::time_point& timestamp, MessageStatus message_status);
 
 private:
-    enum class Tab { Chats, Users };
-    Tab m_activeTab = Tab::Chats;
+
+    /**
+     * @brief Loads the chat list from server, falling back to local cache on failure.
+     *
+     * Asynchronous. Updates m_chats, m_is_offline, and caches results on success.
+     */
+    void loadChats();
 
     /**
      * @brief Searches for users on the server by username or display name.
@@ -52,6 +85,10 @@ private:
      * in the next frame(s) after the server responds.
      */
     void searchUsers(const std::string& query);
+
+    // Tabs.
+    enum class Tab { Chats, Users };
+    Tab m_active_tab = Tab::Chats;
 
     // Rendering helpers.
     void renderSearchBar();
@@ -90,18 +127,19 @@ private:
      */
     std::string formatLastMessageTime(const std::chrono::system_clock::time_point& tp) const;
 
+    std::vector<ChatListItem> m_chats;              ///< Current chat list (server or cached).
+    std::vector<ChatListItem> m_search_results;     ///< Results from the last searchUsers() call.
+    std::function<void(const User&)> m_on_selected; ///< Callback for user selection.
+    char m_search_buffer[256] = "";                 ///< Input buffer for the search field.
+    const ChatListWindowStyle& m_current_style;     ///< Visual style reference (owned by StyleManager).
+
+    // Use cases.
     GetUsersUseCase& m_get_users_uc;
     GetChatsUseCase& m_get_chats_uc;
     IMessageRepository& m_local_repo;
     std::string m_current_user_id;
 
-    std::vector<ChatListItem> m_chats;
-    std::vector<ChatListItem> m_search_results;
-    std::function<void(const User&)> m_on_selected;
+    bool m_is_offline = false;          ///< True when showing cached data (server unreachable).
+    double m_last_chats_refresh = 0.0;  ///< Timestamp of last auto-refresh (seconds from ImGui::GetTime()).
 
-    char m_search_buffer[256] = "";
-    const ChatListWindowStyle& m_current_style;
-
-    bool m_is_offline = false;
-    double m_last_chats_refresh = 0.0;
 };

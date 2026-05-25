@@ -18,11 +18,14 @@ const char* ChatListWindow::getName() const
 }
 
 void ChatListWindow::setOnUserSelected(std::function<void(const User&)> callback) {
-    m_on_selected = std::move(callback);
+    m_on_selected = std::move(callback); // Will be called from renderUserBloack() if button pressed.
 }
 
 void ChatListWindow::refreshUsers() {
     // Called from outside, e.g. after reconnection or manual refresh
+
+    m_last_chats_refresh = 0.0;
+
     loadChats();
 }
 
@@ -37,7 +40,7 @@ void ChatListWindow::loadChats() {
         }
         else {
             // Сетевая ошибка — пробуем загрузить из кеша
-            auto cached = m_local_repo.getCachedChatList(m_current_user_id);
+            std::vector<ChatListItem> cached = m_local_repo.getCachedChatList(m_current_user_id);
             if (!cached.empty()) {
                 m_chats = std::move(cached);
                 m_is_offline = true;
@@ -50,7 +53,6 @@ void ChatListWindow::loadChats() {
         }
         });
 }
-
 
 // Update last message in chat item of this class.
 void ChatListWindow::updateLastMessage(const std::string& partner_id, const std::string& text, const std::chrono::system_clock::time_point& timestamp, MessageStatus message_status)
@@ -124,7 +126,7 @@ void ChatListWindow::render() {
         ImGui::PopStyleColor();
     }
 
-    if (m_activeTab == Tab::Chats) {
+    if (m_active_tab == Tab::Chats) {
         renderChatList();
     }
     else {
@@ -156,7 +158,7 @@ void ChatListWindow::renderSearchBar() {
     ImGui::PushStyleColor(ImGuiCol_Text, m_current_style.tab_text_style.color);
 
     if (ImGui::Button(m_current_style.search_button_text.c_str())) {
-        if (m_activeTab == Tab::Chats) {
+        if (m_active_tab == Tab::Chats) {
             // Local filter. // todo.
         }
         else {
@@ -174,7 +176,7 @@ void ChatListWindow::renderTabs() {
     ImGui::PushStyleColor(ImGuiCol_Text, m_current_style.tab_text_style.color);
 
     // Light active tab.
-    if (m_activeTab == Tab::Chats) {
+    if (m_active_tab == Tab::Chats) {
         ImGui::PushStyleColor(ImGuiCol_Button, m_current_style.tab_active_color);
         if (ImGui::Button(m_current_style.chats_tab_text.c_str())) {
         }
@@ -182,13 +184,13 @@ void ChatListWindow::renderTabs() {
     }
     else {
         if (ImGui::Button(m_current_style.chats_tab_text.c_str())) {
-            m_activeTab = Tab::Chats;
+            m_active_tab = Tab::Chats;
         }
     }
 
     ImGui::SameLine();
 
-    if (m_activeTab == Tab::Users) {
+    if (m_active_tab == Tab::Users) {
         ImGui::PushStyleColor(ImGuiCol_Button, m_current_style.tab_active_color);
         if (ImGui::Button(m_current_style.users_tab_text.c_str())) {
         }
@@ -196,7 +198,7 @@ void ChatListWindow::renderTabs() {
     }
     else {
         if (ImGui::Button(m_current_style.users_tab_text.c_str())) {
-            m_activeTab = Tab::Users;
+            m_active_tab = Tab::Users;
         }
     }
 
