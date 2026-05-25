@@ -101,6 +101,7 @@ struct MessageStyle {
     float max_text_width_ratio;
     ImVec4 border_color;
     float border_width;
+    float bubble_rounding;
 };
 
 /**

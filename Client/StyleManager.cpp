@@ -210,6 +210,8 @@ void StyleManager::setChatWindowStyle()
     m_chat_window_style.message_style.time_text_style.bold = false;
     m_chat_window_style.message_style.time_text_style.alignment = ImVec2(1.0f, 1.0f);
 
+    m_chat_window_style.message_style.bubble_rounding = 8;
+
     // Status colors (Sending, Sent, Delivered, Read, Failed, Default)
     m_chat_window_style.message_style.status_style[0].color = ImVec4(0.8f, 0.8f, 0.0f, 1.0f); // Sending - yellow
     m_chat_window_style.message_style.status_style[1].color = ImVec4(0.7f, 0.7f, 0.7f, 1.0f); // Sent - gray
@@ -224,13 +226,14 @@ void StyleManager::setChatWindowStyle()
         s.alignment = ImVec2(1.0f, 1.0f);
     }
 
-    m_chat_window_style.message_style.bubble_padding = 4.0f;
+    m_chat_window_style.message_style.bubble_padding = 8.0f;
     m_chat_window_style.message_style.bubble_margin = 2.0f;
     m_chat_window_style.message_style.max_text_width_ratio = 0.7f;
     m_chat_window_style.message_style.border_color = ImVec4(0.5f, 0.5f, 0.5f, 0.5f);
     m_chat_window_style.message_style.border_width = 1.0f;
 
     m_chat_window_style.chat_header_prefix = "Chat with ";
+
 }
 
 
