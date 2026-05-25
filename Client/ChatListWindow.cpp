@@ -65,6 +65,7 @@ void ChatListWindow::searchUsers(const std::string& query) {
 
 void ChatListWindow::render() {
 
+    // Update each 8 seconds.
     double now = ImGui::GetTime();
     if (!m_is_offline && now - m_last_chats_refresh > 8.0) {
         m_last_chats_refresh = now;
@@ -78,7 +79,9 @@ void ChatListWindow::render() {
 
     // Show offline indicator when using cached data
     if (m_is_offline) {
-        ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "Offline - showing cached data");
+        ImGui::PushStyleColor(ImGuiCol_Text, m_current_style.offline_status_text_style.color);
+        ImGui::Text("%s", m_current_style.offline_status_text.c_str());
+        ImGui::PopStyleColor();
     }
 
     if (m_activeTab == Tab::Chats) {
@@ -90,27 +93,74 @@ void ChatListWindow::render() {
 }
 
 void ChatListWindow::renderSearchBar() {
-    // Search input takes most of the width, leaving room for the Search button
-    ImGui::PushItemWidth(-ImGui::CalcTextSize("Search").x - 15);
-    ImGui::InputTextWithHint("##SearchField", "Search chats, users...", m_search_buffer, IM_ARRAYSIZE(m_search_buffer));
+    // Style for hint text.
+    ImGui::PushStyleColor(ImGuiCol_TextDisabled, m_current_style.search_hint_style.color);
+
+    // Search input.
+    float button_width = ImGui::CalcTextSize(m_current_style.search_button_text.c_str()).x +
+        ImGui::GetStyle().FramePadding.x * 2;
+    ImGui::PushItemWidth(-button_width - 10);
+    ImGui::InputTextWithHint("##SearchField",
+        m_current_style.search_field_hint.c_str(),
+        m_search_buffer,
+        IM_ARRAYSIZE(m_search_buffer));
     ImGui::PopItemWidth();
+
+    ImGui::PopStyleColor();  // TextDisabled.
+
     ImGui::SameLine();
-    if (ImGui::Button("Search")) {
+
+    // Search button.
+    ImGui::PushStyleColor(ImGuiCol_Button, m_current_style.search_button_color);
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, m_current_style.search_button_hover_color);
+    ImGui::PushStyleColor(ImGuiCol_Text, m_current_style.tab_text_style.color);
+
+    if (ImGui::Button(m_current_style.search_button_text.c_str())) {
         if (m_activeTab == Tab::Chats) {
-            // Local filter of existing chats by search buffer
-            // TODO: implement filtering in renderChatList based on m_search_buffer
+            // Local filter. // todo.
         }
         else {
             searchUsers(m_search_buffer);
         }
     }
+
+    ImGui::PopStyleColor(3);
 }
 
 void ChatListWindow::renderTabs() {
-    // Tab buttons to switch between Chats and Users
-    if (ImGui::Button("Chats")) m_activeTab = Tab::Chats;
+    ImGui::PushStyleColor(ImGuiCol_Button, m_current_style.tab_button_color);
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, m_current_style.tab_button_hover_color);
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, m_current_style.tab_active_color);
+    ImGui::PushStyleColor(ImGuiCol_Text, m_current_style.tab_text_style.color);
+
+    // Light active tab.
+    if (m_activeTab == Tab::Chats) {
+        ImGui::PushStyleColor(ImGuiCol_Button, m_current_style.tab_active_color);
+        if (ImGui::Button(m_current_style.chats_tab_text.c_str())) {
+        }
+        ImGui::PopStyleColor();
+    }
+    else {
+        if (ImGui::Button(m_current_style.chats_tab_text.c_str())) {
+            m_activeTab = Tab::Chats;
+        }
+    }
+
     ImGui::SameLine();
-    if (ImGui::Button("Users")) m_activeTab = Tab::Users;
+
+    if (m_activeTab == Tab::Users) {
+        ImGui::PushStyleColor(ImGuiCol_Button, m_current_style.tab_active_color);
+        if (ImGui::Button(m_current_style.users_tab_text.c_str())) {
+        }
+        ImGui::PopStyleColor();
+    }
+    else {
+        if (ImGui::Button(m_current_style.users_tab_text.c_str())) {
+            m_activeTab = Tab::Users;
+        }
+    }
+
+    ImGui::PopStyleColor(4);  // Button, ButtonHovered, ButtonActive, Text
 }
 
 void ChatListWindow::renderChatList() {
@@ -118,7 +168,7 @@ void ChatListWindow::renderChatList() {
         ImGui::Text("No chats yet. Search for users to start messaging.");
     }
     else {
-        for (const auto& chat : m_chats) {
+        for (const ChatListItem& chat : m_chats) {
             renderUserBlock(chat);
             ImGui::Spacing();
         }
@@ -126,6 +176,7 @@ void ChatListWindow::renderChatList() {
 }
 
 void ChatListWindow::renderUserList() {
+    // Render of all found users.
     if (m_search_results.empty() && strlen(m_search_buffer) == 0) {
         ImGui::Text("Type a username to search.");
     }
@@ -133,7 +184,7 @@ void ChatListWindow::renderUserList() {
         ImGui::Text("No users found.");
     }
     else {
-        for (const auto& item : m_search_results) {
+        for (const ChatListItem& item : m_search_results) {
             renderUserBlock(item);
             ImGui::Spacing();
         }

@@ -56,13 +56,13 @@ void StyleManager::setChatListWindowStyle()
     m_chat_list_style.user_status_text_style.bold = false;
     m_chat_list_style.user_status_text_style.alignment = ImVec2(0.0f, 0.0f);
 
-    // Last message preview style
+    // Last message preview style.
     m_chat_list_style.last_message_text_style.color = ImVec4(0.7f, 0.7f, 0.7f, 1.0f);
     m_chat_list_style.last_message_text_style.font_size = 12.0f;
     m_chat_list_style.last_message_text_style.bold = false;
     m_chat_list_style.last_message_text_style.alignment = ImVec2(0.0f, 0.5f);
 
-    // Time style
+    // Time style.
     m_chat_list_style.last_message_time_text_style.color = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
     m_chat_list_style.last_message_time_text_style.font_size = 11.0f;
     m_chat_list_style.last_message_time_text_style.bold = false;
@@ -79,11 +79,11 @@ void StyleManager::setChatListWindowStyle()
     m_chat_list_style.refresh_button_color = ImVec4(0.27f, 0.51f, 0.78f, 1.0f);  // Standard imgui color.
     m_chat_list_style.refresh_button_hover_color = ImVec4(0.35f, 0.61f, 0.88f, 1.0f);  // Hover color.
 
-    // Online indicator
+    // Online indicator.
     m_chat_list_style.online_indicator_color = ImVec4(0.3f, 1.0f, 0.3f, 1.0f);
     m_chat_list_style.online_indicator_radius = 4.0f;
 
-    // Message sending status
+    // Message sending status.
     m_chat_list_style.message_status_color[0] = ImVec4(0.8f, 0.8f, 0.0f, 1.0f); // Sending.     Yellow.
     m_chat_list_style.message_status_color[1] = ImVec4(0.7f, 0.7f, 0.7f, 1.0f); // Sent.        Gray.
     m_chat_list_style.message_status_color[2] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // Delivered.   Whilte.
@@ -91,8 +91,36 @@ void StyleManager::setChatListWindowStyle()
     m_chat_list_style.message_status_color[4] = ImVec4(1.0f, 0.2f, 0.2f, 1.0f); // Failed.      Red.
     m_chat_list_style.message_status_color[5] = ImVec4(0.7f, 0.7f, 0.7f, 1.0f); // Default.     Gray.
 
+    // Offline status text.
+    m_chat_list_style.offline_status_text = "Offline, Connecting...";
+    m_chat_list_style.offline_status_text_style.color = ImVec4(1.0f, 0.5f, 0.0f, 1.0f);
+    m_chat_list_style.offline_status_text_style.font_size = 13.0f;
+    m_chat_list_style.offline_status_text_style.bold = false;
+    m_chat_list_style.offline_status_text_style.alignment = ImVec2(0.5f, 0.5f);
+
     // Spacing.
     m_chat_list_style.spacing = 5.0f;
+
+    // Tabs
+    m_chat_list_style.chats_tab_text = "Chats";
+    m_chat_list_style.users_tab_text = "Users";
+    m_chat_list_style.tab_text_style.color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+    m_chat_list_style.tab_text_style.font_size = 14.0f;
+    m_chat_list_style.tab_text_style.bold = false;
+    m_chat_list_style.tab_text_style.alignment = ImVec2(0.5f, 0.5f);
+    m_chat_list_style.tab_button_color = ImVec4(0.2f, 0.2f, 0.22f, 1.0f);
+    m_chat_list_style.tab_button_hover_color = ImVec4(0.3f, 0.3f, 0.33f, 1.0f);
+    m_chat_list_style.tab_active_color = ImVec4(0.27f, 0.51f, 0.78f, 1.0f);
+
+    // Search
+    m_chat_list_style.search_field_hint = "Search chats, users...";
+    m_chat_list_style.search_button_text = "Search";
+    m_chat_list_style.search_hint_style.color = ImVec4(0.6f, 0.6f, 0.6f, 1.0f);
+    m_chat_list_style.search_hint_style.font_size = 13.0f;
+    m_chat_list_style.search_hint_style.bold = false;
+    m_chat_list_style.search_hint_style.alignment = ImVec2(0.0f, 0.5f);
+    m_chat_list_style.search_button_color = ImVec4(0.27f, 0.51f, 0.78f, 1.0f);
+    m_chat_list_style.search_button_hover_color = ImVec4(0.35f, 0.61f, 0.88f, 1.0f);
 }
 
 const ChatListWindowStyle& StyleManager::getChatListWindowStyle() const

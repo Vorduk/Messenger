@@ -62,8 +62,21 @@ struct ChatListWindowStyle {
     ImVec4 refresh_button_hover_color;
     ImVec4 online_indicator_color;
     std::array<ImVec4, 6> message_status_color;
+    TextStyle offline_status_text_style;
+    std::string offline_status_text;
     float online_indicator_radius;
     float spacing;
+    std::string chats_tab_text;
+    std::string users_tab_text;
+    TextStyle tab_text_style;
+    ImVec4 tab_button_color;
+    ImVec4 tab_button_hover_color;
+    ImVec4 tab_active_color;
+    std::string search_field_hint;
+    std::string search_button_text;
+    TextStyle search_hint_style;
+    ImVec4 search_button_color;
+    ImVec4 search_button_hover_color;
 };
 
 /**
