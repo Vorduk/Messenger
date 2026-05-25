@@ -7,6 +7,10 @@ StyleManager& StyleManager::getInstance()
     return instance;
 }
 
+StyleManager::StyleManager() {
+    setChatListWindowStyle();
+}
+
 void StyleManager::setChatListWindowStyle()
 {
     // Main text style for regular text.
@@ -81,11 +85,11 @@ void StyleManager::setChatListWindowStyle()
 
     // Message sending status
     m_chat_list_style.message_status_color[0] = ImVec4(0.8f, 0.8f, 0.0f, 1.0f); // Sending.     Yellow.
-    m_chat_list_style.message_status_color[0] = ImVec4(0.7f, 0.7f, 0.7f, 1.0f); // Sent.        Gray.
-    m_chat_list_style.message_status_color[0] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // Delivered.   Whilte.
-    m_chat_list_style.message_status_color[0] = ImVec4(0.7f, 0.7f, 0.7f, 1.0f); // Read.        Blue.
-    m_chat_list_style.message_status_color[0] = ImVec4(1.0f, 0.2f, 0.2f, 1.0f); // Failed.      Red.
-    m_chat_list_style.message_status_color[0] = ImVec4(0.7f, 0.7f, 0.7f, 1.0f); // Default.     Gray.
+    m_chat_list_style.message_status_color[1] = ImVec4(0.7f, 0.7f, 0.7f, 1.0f); // Sent.        Gray.
+    m_chat_list_style.message_status_color[2] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // Delivered.   Whilte.
+    m_chat_list_style.message_status_color[3] = ImVec4(0.7f, 0.7f, 0.7f, 1.0f); // Read.        Blue.
+    m_chat_list_style.message_status_color[4] = ImVec4(1.0f, 0.2f, 0.2f, 1.0f); // Failed.      Red.
+    m_chat_list_style.message_status_color[5] = ImVec4(0.7f, 0.7f, 0.7f, 1.0f); // Default.     Gray.
 
     // Spacing.
     m_chat_list_style.spacing = 5.0f;

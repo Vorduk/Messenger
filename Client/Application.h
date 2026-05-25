@@ -49,7 +49,7 @@ public:
 
 
 
-    void onMessageSent(const std::string& message_id, const std::string& confirmation) override; ///< Presenter callback for success.
+    void onMessageSent(const std::string& message_id, const std::string& message_text, const std::string& confirmation) override; ///< Presenter callback for success.
     void onError(const std::string& error) override;                                              ///< Presenter callback for errors.
 
 private:

@@ -140,9 +140,9 @@ void ChatListWindow::renderUserList() {
     }
 }
 
-void ChatListWindow::renderUserBlock(const ChatListItem& item)
+void ChatListWindow::renderUserBlock(const ChatListItem& chat)
 {
-    const User& user = item.user;
+    const User& user = chat.user;
     std::string block_id = "user_block_" + user.id; // Unique name for imgui.
 
     float block_width = ImGui::GetContentRegionAvail().x;
@@ -196,7 +196,7 @@ void ChatListWindow::renderUserBlock(const ChatListItem& item)
     ImGui::PopStyleColor();
 
     // Render last message time on the right side (opposite to name).
-    std::string time_str = formatLastMessageTime(item.last_message_time);
+    std::string time_str = formatLastMessageTime(chat.last_message_time);
     if (!time_str.empty()) {
         ImGui::SameLine();
         float time_width = ImGui::CalcTextSize(time_str.c_str()).x;
@@ -207,11 +207,11 @@ void ChatListWindow::renderUserBlock(const ChatListItem& item)
         ImGui::PopStyleColor();
     }
 
-    // Render last message preview below name (replaces online/offline text status).
+    // Render last message preview below name.
     float last_msg_y = name_y + m_current_style.user_name_text_style.font_size + 2;
     ImGui::SetCursorPos(ImVec2(name_x, last_msg_y));
-    if (!item.last_message.empty()) {
-        std::string msg = item.last_message;
+    if (!chat.last_message.empty()) {
+        std::string msg = chat.last_message;
         if (msg.length() > 30) msg = msg.substr(0, 27) + "..."; // truncate if too long.
         ImGui::PushStyleColor(ImGuiCol_Text, m_current_style.last_message_text_style.color);
         ImGui::Text("%s", msg.c_str());
@@ -219,17 +219,17 @@ void ChatListWindow::renderUserBlock(const ChatListItem& item)
     }
 
     // Render message status indicator at bottom-right of the block
-    if (!item.last_message.empty() && item.last_message_status != MessageStatus::Default) {
-        std::string status_text = messageStatusToString(item.last_message_status);
+    if (!chat.last_message.empty() && chat.last_message_status != MessageStatus::Default) {
+        std::string status_text = messageStatusToString(chat.last_message_status);
         if (!status_text.empty()) {
             ImVec4 status_color;
-            switch (item.last_message_status) {
-                case MessageStatus::Sending:   status_color = m_current_style.message_status_color[0];
-                case MessageStatus::Sent:      status_color = m_current_style.message_status_color[1];
-                case MessageStatus::Delivered: status_color = m_current_style.message_status_color[2];
-                case MessageStatus::Read:      status_color = m_current_style.message_status_color[3];
-                case MessageStatus::Failed:    status_color = m_current_style.message_status_color[4];
-                default:                       status_color = m_current_style.message_status_color[5];
+            switch (chat.last_message_status) {
+                case MessageStatus::Sending:   status_color = m_current_style.message_status_color[0]; break;
+                case MessageStatus::Sent:      status_color = m_current_style.message_status_color[1]; break;
+                case MessageStatus::Delivered: status_color = m_current_style.message_status_color[2]; break;
+                case MessageStatus::Read:      status_color = m_current_style.message_status_color[3]; break;
+                case MessageStatus::Failed:    status_color = m_current_style.message_status_color[4]; break;
+                default:                       status_color = m_current_style.message_status_color[5]; break;
             }
 
             ImVec2 text_size = ImGui::CalcTextSize(status_text.c_str());

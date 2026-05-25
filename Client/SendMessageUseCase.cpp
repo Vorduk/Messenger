@@ -19,10 +19,10 @@ void SendMessageUseCase::execute(const std::string& sender_id, const std::string
 
     std::string local_id = localMsg.id;
     m_server.sendMessage(sender_id, receiver_id, text,
-        [this, local_id](bool success, const std::string& msg_id_or_error) {
+        [this, local_id, text](bool success, const std::string& msg_id_or_error) {
             if (success) {
                 m_local_repo.updateMessageStatus(local_id, MessageStatus::Sent);
-                m_presenter.onMessageSent(local_id, "Message sent");
+                m_presenter.onMessageSent(local_id, text, "Message sent");
             }
             else {
                 m_local_repo.updateMessageStatus(local_id, MessageStatus::Failed);

@@ -74,11 +74,11 @@ void Application::stop() {
     m_running = false; 
 }
 
-void Application::onMessageSent(const std::string& message_id, const std::string& confirmation) {
+void Application::onMessageSent(const std::string& message_id, const std::string& message_text, const std::string& confirmation) {
     if (m_chat_window) m_chat_window->AddConfirmation(confirmation);
 
     if (m_chat_list_window) {
-        m_chat_list_window->updateLastMessage(m_current_chat_partner_id, confirmation, std::chrono::system_clock::now(), MessageStatus::Sent);
+        m_chat_list_window->updateLastMessage(m_current_chat_partner_id, message_text, std::chrono::system_clock::now(), MessageStatus::Sent);
     }
 }
 

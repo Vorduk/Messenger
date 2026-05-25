@@ -83,7 +83,7 @@ public:
     //const ChatListWindowStyle& getChatWindowStyle() const; // todo
 
 private:
-    StyleManager() = default;
+    StyleManager();
     ~StyleManager() = default;
     StyleManager(const StyleManager&) = delete;
     StyleManager& operator=(const StyleManager&) = delete;
