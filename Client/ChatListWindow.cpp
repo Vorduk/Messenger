@@ -145,7 +145,6 @@ void ChatListWindow::renderUserBlock(const ChatListItem& item)
     const User& user = item.user;
     std::string block_id = "user_block_" + user.id; // Unique name for imgui.
 
-    ImVec2 block_start = ImGui::GetCursorScreenPos();
     float block_width = ImGui::GetContentRegionAvail().x;
 
     // Use block size from style (height from style, width auto).
@@ -175,7 +174,7 @@ void ChatListWindow::renderUserBlock(const ChatListItem& item)
 
     // Draw online indicator (green circle) at bottom-right of avatar.
     if (user.is_online) {
-        ImDrawList* draw_list = ImGui::GetWindowDrawList();
+        draw_list = ImGui::GetWindowDrawList();
         float size = m_current_style.avatar_style.size;
         ImVec2 center(avatar_cursor.x + size - m_current_style.online_indicator_radius,
             avatar_cursor.y + size - m_current_style.online_indicator_radius);
@@ -225,12 +224,12 @@ void ChatListWindow::renderUserBlock(const ChatListItem& item)
         if (!status_text.empty()) {
             ImVec4 status_color;
             switch (item.last_message_status) {
-            case MessageStatus::Sending:   status_color = ImVec4(0.8f, 0.8f, 0.0f, 1.0f); break; // yellow
-            case MessageStatus::Sent:      status_color = ImVec4(0.7f, 0.7f, 0.7f, 1.0f); break; // gray
-            case MessageStatus::Delivered: status_color = ImVec4(0.7f, 0.7f, 0.7f, 1.0f); break; // gray
-            case MessageStatus::Read:      status_color = ImVec4(0.3f, 0.6f, 1.0f, 1.0f); break; // blue
-            case MessageStatus::Failed:    status_color = ImVec4(1.0f, 0.2f, 0.2f, 1.0f); break; // red
-            default:                       status_color = ImVec4(0.7f, 0.7f, 0.7f, 1.0f); break;
+                case MessageStatus::Sending:   status_color = m_current_style.message_status_color[0];
+                case MessageStatus::Sent:      status_color = m_current_style.message_status_color[1];
+                case MessageStatus::Delivered: status_color = m_current_style.message_status_color[2];
+                case MessageStatus::Read:      status_color = m_current_style.message_status_color[3];
+                case MessageStatus::Failed:    status_color = m_current_style.message_status_color[4];
+                default:                       status_color = m_current_style.message_status_color[5];
             }
 
             ImVec2 text_size = ImGui::CalcTextSize(status_text.c_str());

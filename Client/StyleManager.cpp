@@ -79,6 +79,14 @@ void StyleManager::setChatListWindowStyle()
     m_chat_list_style.online_indicator_color = ImVec4(0.3f, 1.0f, 0.3f, 1.0f);
     m_chat_list_style.online_indicator_radius = 4.0f;
 
+    // Message sending status
+    m_chat_list_style.message_status_color[0] = ImVec4(0.8f, 0.8f, 0.0f, 1.0f); // Sending.     Yellow.
+    m_chat_list_style.message_status_color[0] = ImVec4(0.7f, 0.7f, 0.7f, 1.0f); // Sent.        Gray.
+    m_chat_list_style.message_status_color[0] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // Delivered.   Whilte.
+    m_chat_list_style.message_status_color[0] = ImVec4(0.7f, 0.7f, 0.7f, 1.0f); // Read.        Blue.
+    m_chat_list_style.message_status_color[0] = ImVec4(1.0f, 0.2f, 0.2f, 1.0f); // Failed.      Red.
+    m_chat_list_style.message_status_color[0] = ImVec4(0.7f, 0.7f, 0.7f, 1.0f); // Default.     Gray.
+
     // Spacing.
     m_chat_list_style.spacing = 5.0f;
 }

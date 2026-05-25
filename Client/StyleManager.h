@@ -1,6 +1,7 @@
 #pragma once
 #include "imgui.h"
 #include <string>
+#include <array>
 
 /**
  * @brief Visual layout and appearance for a rectangular UI block.
@@ -60,6 +61,7 @@ struct ChatListWindowStyle {
     ImVec4 refresh_button_color;
     ImVec4 refresh_button_hover_color;
     ImVec4 online_indicator_color;
+    std::array<ImVec4, 6> message_status_color;
     float online_indicator_radius;
     float spacing;
 };
