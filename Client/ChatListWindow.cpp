@@ -230,8 +230,8 @@ void ChatListWindow::renderUserList() {
         ImGui::Text("%s", m_current_style.empty_search_prompt_text.c_str());
         ImGui::PopStyleColor();
     }
-    else if (m_search_results.empty() && m_is_offline) {
-        // Server is unavailable
+    else if (m_search_results.empty() && m_is_user_search_failed) {
+        // Server is unavailable — показываем предупреждение
         ImGui::PushStyleColor(ImGuiCol_Text, m_current_style.search_unavailable_text_style.color);
         ImGui::Text("%s", m_current_style.search_unavailable_text.c_str());
         ImGui::PopStyleColor();
