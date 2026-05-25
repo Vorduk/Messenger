@@ -14,13 +14,12 @@ StyleManager::StyleManager() {
     setChatWindowStyle();
 }
 
-
 const ChatListWindowStyle& StyleManager::getChatListWindowStyle() const
 {
     return m_chat_list_window_style;
 }
 
-const ChatListWindowStyle& StyleManager::getChatWindowStyle() const
+const ChatWindowStyle& StyleManager::getChatWindowStyle() const
 {
     return m_chat_window_style;
 }
@@ -77,10 +76,10 @@ void StyleManager::setChatListWindowStyle()
     m_chat_list_window_style.last_message_text_style.alignment = ImVec2(0.0f, 0.5f);
 
     // Time style.
-    m_chat_list_style.last_message_time_text_style.color = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
-    m_chat_list_style.last_message_time_text_style.font_size = 11.0f;
-    m_chat_list_style.last_message_time_text_style.bold = false;
-    m_chat_list_style.last_message_time_text_style.alignment = ImVec2(1.0f, 0.0f);
+    m_chat_list_window_style.last_message_time_text_style.color = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
+    m_chat_list_window_style.last_message_time_text_style.font_size = 11.0f;
+    m_chat_list_window_style.last_message_time_text_style.bold = false;
+    m_chat_list_window_style.last_message_time_text_style.alignment = ImVec2(1.0f, 0.0f);
 
     // Avatar style.
     m_chat_list_window_style.avatar_style.size = 36.0f;
@@ -151,11 +150,11 @@ void StyleManager::setChatListWindowStyle()
     m_chat_list_window_style.empty_search_prompt_text_style.alignment = ImVec2(0.5f, 0.5f);
 
     // Empty state — no results
-    m_chat_list_style.no_users_found_text = "No users found.";
-    m_chat_list_style.no_users_found_text_style.color = ImVec4(0.6f, 0.6f, 0.6f, 1.0f);
-    m_chat_list_style.no_users_found_text_style.font_size = 13.0f;
-    m_chat_list_style.no_users_found_text_style.bold = false;
-    m_chat_list_style.no_users_found_text_style.alignment = ImVec2(0.5f, 0.5f);
+    m_chat_list_window_style.no_users_found_text = "No users found.";
+    m_chat_list_window_style.no_users_found_text_style.color = ImVec4(0.6f, 0.6f, 0.6f, 1.0f);
+    m_chat_list_window_style.no_users_found_text_style.font_size = 13.0f;
+    m_chat_list_window_style.no_users_found_text_style.bold = false;
+    m_chat_list_window_style.no_users_found_text_style.alignment = ImVec2(0.5f, 0.5f);
 
     // Empty state — search unavailable
     m_chat_list_window_style.search_unavailable_text = "Search unavailable while offline.";
@@ -230,6 +229,8 @@ void StyleManager::setChatWindowStyle()
     m_chat_window_style.message_style.max_text_width_ratio = 0.7f;
     m_chat_window_style.message_style.border_color = ImVec4(0.5f, 0.5f, 0.5f, 0.5f);
     m_chat_window_style.message_style.border_width = 1.0f;
+
+    m_chat_window_style.chat_header_prefix = "Chat with ";
 }
 
 

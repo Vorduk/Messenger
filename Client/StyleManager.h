@@ -121,6 +121,7 @@ struct ChatWindowStyle {
     ImVec4 chat_background_color;
     ImVec4 separator_color;
     MessageStyle message_style;
+    std::string chat_header_prefix;
 };
 
 /**
@@ -136,7 +137,7 @@ public:
 
     // Get style reference for particular window.
     const ChatListWindowStyle& getChatListWindowStyle() const;
-    const ChatListWindowStyle& getChatWindowStyle() const;
+    const ChatWindowStyle& getChatWindowStyle() const;
     //const ChatListWindowStyle& getLoginWindowStyle() const; // todo
     
 

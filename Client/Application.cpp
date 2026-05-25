@@ -75,7 +75,6 @@ void Application::stop() {
 }
 
 void Application::onMessageSent(const std::string& message_id, const std::string& message_text, const std::string& confirmation) {
-    if (m_chat_window) m_chat_window->AddConfirmation(confirmation);
 
     if (m_chat_list_window) {
         m_chat_list_window->updateLastMessage(m_current_chat_partner_id, message_text, std::chrono::system_clock::now(), MessageStatus::Sent);
@@ -83,7 +82,7 @@ void Application::onMessageSent(const std::string& message_id, const std::string
 }
 
 void Application::onError(const std::string& error) {
-    if (m_chat_window) m_chat_window->AddError(error);
+    return;
 }
 
 void Application::renderUI() {
@@ -105,8 +104,10 @@ void Application::onUserLoggedIn(const std::string& user_id, const std::string& 
     // Get messages use case
     m_get_messages_uc = std::make_unique<GetMessagesUseCase>(m_server_api, m_local_repo);
 
+    StyleManager& style_manager = StyleManager::getInstance(); 
+
     // Chat windows
-    m_chat_window = std::make_unique<ChatWindow>();
+    m_chat_window = std::make_unique<ChatWindow>(style_manager.getChatWindowStyle());
 
     struct SendHandler : ISendMessageHandler {
         SendMessageUseCase& m_uc;
@@ -124,7 +125,7 @@ void Application::onUserLoggedIn(const std::string& user_id, const std::string& 
 
     m_get_chats_uc = std::make_unique<GetChatsUseCase>(m_server_api);
 
-    StyleManager& style_manager = StyleManager::getInstance(); 
+    
 
     m_chat_list_window = std::make_unique<ChatListWindow>(
         style_manager.getChatListWindowStyle(),
