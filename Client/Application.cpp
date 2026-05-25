@@ -78,7 +78,7 @@ void Application::onMessageSent(const std::string& message_id, const std::string
     if (m_chat_window) m_chat_window->AddConfirmation(confirmation);
 
     if (m_chat_list_window) {
-        m_chat_list_window->updateLastMessage(m_current_chat_partner_id, confirmation, std::chrono::system_clock::now());
+        m_chat_list_window->updateLastMessage(m_current_chat_partner_id, confirmation, std::chrono::system_clock::now(), MessageStatus::Sent);
     }
 }
 

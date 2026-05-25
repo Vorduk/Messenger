@@ -66,7 +66,7 @@ void ChatListWindow::searchUsers(const std::string& query) {
 void ChatListWindow::render() {
 
     double now = ImGui::GetTime();
-    if (now - m_last_chats_refresh > 8.0) {
+    if (!m_is_offline && now - m_last_chats_refresh > 8.0) {
         m_last_chats_refresh = now;
         loadChats();
     }
@@ -314,7 +314,7 @@ std::string ChatListWindow::formatLastMessageTime(const std::chrono::system_cloc
     }
 
     // Calculate difference in calendar days (local time).
-    auto make_midnight = [](std::tm t) -> time_t {
+    std::function<time_t(std::tm)> make_midnight = [](std::tm t) -> time_t {
         t.tm_hour = 0;
         t.tm_min = 0;
         t.tm_sec = 0;
@@ -350,22 +350,30 @@ std::string ChatListWindow::formatLastMessageTime(const std::chrono::system_cloc
     }
 }
 
-void ChatListWindow::updateLastMessage(const std::string& partner_id,
-    const std::string& text,
-    const std::chrono::system_clock::time_point& timestamp) {
-    for (auto& chat : m_chats) {
-        if (chat.user.id == partner_id) {
-            chat.last_message = text;
-            chat.last_message_time = timestamp;
-            chat.last_message_status = MessageStatus::Sent;
-            if (&chat != &m_chats.front()) {
-                auto item = std::move(chat);
-                m_chats.erase(std::remove_if(m_chats.begin(), m_chats.end(),
-                    [&partner_id](const ChatListItem& c) { return c.user.id == partner_id; }),
-                    m_chats.end());
-                m_chats.insert(m_chats.begin(), std::move(item));
-            }
-            break;
+void ChatListWindow::updateLastMessage(const std::string& partner_id, const std::string& text, const std::chrono::system_clock::time_point& timestamp, MessageStatus message_status)
+{
+    // Find the chat with the given partner_id
+    std::vector<ChatListItem>::iterator it = std::find_if( m_chats.begin(), m_chats.end(),
+        [&partner_id](const ChatListItem& chat) {
+            return chat.user.id == partner_id;
         }
+    );
+
+    // If not found, nothing to update
+    if (it == m_chats.end()) {
+        return;
+    }
+
+    // Update message fields
+    it->last_message = text;
+    it->last_message_time = timestamp;
+    it->last_message_status = message_status;
+
+    // Move the updated chat to the front of the list if it's not already there
+    if (it != m_chats.begin()) {
+        // std::rotate shifts the range [first, it) forward and places
+        // the element at 'it' to the position 'first'.
+        // Rotate the range [m_chats.begin(), it + 1) left by one position.
+        std::rotate(m_chats.begin(), it, std::next(it));
     }
 }
