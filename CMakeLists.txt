@@ -71,6 +71,21 @@ if(NOT EXISTS "${JSON_INCLUDE_DIR}/json.hpp")
     message(FATAL_ERROR "json.hpp not found in ${JSON_INCLUDE_DIR}. Please copy single_include/nlohmann/json.hpp there.")
 endif()
 
+# -------------------------------------------------------------------
+# Поиск OpenSSL с автоматическим обнаружением
+# -------------------------------------------------------------------
+if(WIN32)
+    # Подсказка: при необходимости пользователь может задать путь через переменную среды или флаг CMake:
+    #   set OPENSSL_ROOT_DIR=C:/Program Files/OpenSSL-Win64
+    # или передать -DOPENSSL_ROOT_DIR="..." при конфигурации.
+    # Если OpenSSL установлен стандартно и прописан в PATH, модуль FindOpenSSL найдёт его автоматически.
+    set(OPENSSL_ROOT_DIR "" CACHE PATH "Root directory of OpenSSL installation")
+endif()
+
+find_package(OpenSSL REQUIRED)
+add_compile_definitions(OPENSSL_FOUND)
+message(STATUS "OpenSSL found: ${OPENSSL_INCLUDE_DIR}")
+
 function(auto_add_executable TARGET_NAME)
     file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS
         "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
@@ -81,10 +96,20 @@ function(auto_add_executable TARGET_NAME)
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${JSON_INCLUDE_DIR}
     )
-    target_link_libraries(${TARGET_NAME} PRIVATE Common glew glfw imgui spdlog)
+    target_link_libraries(${TARGET_NAME} PRIVATE 
+        Common glew glfw imgui spdlog
+        OpenSSL::SSL OpenSSL::Crypto
+    )
     target_compile_definitions(Client PRIVATE GLEW_STATIC)
     if(WIN32)
         target_link_libraries(${TARGET_NAME} PRIVATE ws2_32)
+        # Автоматическое копирование OpenSSL DLL и других зависимостей в папку с исполняемым файлом
+        add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "$<TARGET_RUNTIME_DLLS:${TARGET_NAME}>"
+                "$<TARGET_FILE_DIR:${TARGET_NAME}>"
+            COMMAND_EXPAND_LISTS
+        )
     endif()
     set_target_properties(${TARGET_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TARGET_NAME}"
@@ -101,7 +126,10 @@ function(auto_add_library TARGET_NAME)
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${JSON_INCLUDE_DIR}
     )
-    target_link_libraries(${TARGET_NAME} PUBLIC glew glfw imgui spdlog)
+    target_link_libraries(${TARGET_NAME} PUBLIC 
+        glew glfw imgui spdlog
+        OpenSSL::SSL OpenSSL::Crypto
+    )
     if(WIN32)
         target_link_libraries(${TARGET_NAME} PUBLIC ws2_32)
     endif()
@@ -140,6 +168,7 @@ else()
 endif()
 message(STATUS "JSON include: ${JSON_INCLUDE_DIR}")
 message(STATUS "OpenGL: ${OPENGL_INCLUDE_DIR}")
+message(STATUS "OpenSSL include: ${OPENSSL_INCLUDE_DIR}")
 message(STATUS "GLEW: ${CMAKE_CURRENT_SOURCE_DIR}/extern/glew")
 message(STATUS "========================================")
 message(STATUS "")
