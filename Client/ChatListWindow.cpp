@@ -51,17 +51,57 @@ void ChatListWindow::loadChats() {
         });
 }
 
+
+// Update last message in chat item of this class.
+void ChatListWindow::updateLastMessage(const std::string& partner_id, const std::string& text, const std::chrono::system_clock::time_point& timestamp, MessageStatus message_status)
+{
+    // Find the chat with the given partner_id
+    std::vector<ChatListItem>::iterator it = std::find_if(m_chats.begin(), m_chats.end(),
+        [&partner_id](const ChatListItem& chat) {
+            return chat.user.id == partner_id;
+        }
+    );
+
+    // If not found, nothing to update
+    if (it == m_chats.end()) {
+        return;
+    }
+
+    // Update message fields
+    it->last_message = text;
+    it->last_message_time = timestamp;
+    it->last_message_status = message_status;
+
+    // Move the updated chat to the front of the list if it's not already there
+    if (it != m_chats.begin()) {
+        // std::rotate shifts the range [first, it) forward and places
+        // the element at 'it' to the position 'first'.
+        // Rotate the range [m_chats.begin(), it + 1) left by one position.
+        std::rotate(m_chats.begin(), it, std::next(it));
+    }
+}
+
 void ChatListWindow::searchUsers(const std::string& query) {
     if (query.empty()) {
         m_search_results.clear();
         return;
     }
     // Search users on server by username or display_name
-    m_get_users_uc.search(m_current_user_id, query, [this](std::vector<ChatListItem> items) {
-        m_search_results = std::move(items);
-        LOG_INFO("User search results updated, count: {}", m_search_results.size());
-        });
+    m_get_users_uc.search(m_current_user_id, query,  
+        [this](bool success, std::vector<ChatListItem> items) {
+            if (success) {
+                m_search_results = std::move(items);
+                LOG_INFO("User search results updated, count: {}", m_search_results.size());
+            }
+            else {
+                LOG_WARN("User search failed - server unreachable");
+                // Old search results remains.
+            }
+        }
+    );
 }
+
+// Rendering helpers.
 
 void ChatListWindow::render() {
 
@@ -337,6 +377,7 @@ void ChatListWindow::renderUserAvatar(const User& user, float size)
     ImGui::Dummy(ImVec2(size, size));
 }
 
+// Message time format helper.
 std::string ChatListWindow::formatLastMessageTime(const std::chrono::system_clock::time_point& tp) const {
     using namespace std::chrono;
     if (tp == system_clock::time_point::min()) // No data.
@@ -398,33 +439,5 @@ std::string ChatListWindow::formatLastMessageTime(const std::chrono::system_cloc
     }
     else {   // year_diff >= 2
         return std::to_string(year_diff) + " years ago";
-    }
-}
-
-void ChatListWindow::updateLastMessage(const std::string& partner_id, const std::string& text, const std::chrono::system_clock::time_point& timestamp, MessageStatus message_status)
-{
-    // Find the chat with the given partner_id
-    std::vector<ChatListItem>::iterator it = std::find_if( m_chats.begin(), m_chats.end(),
-        [&partner_id](const ChatListItem& chat) {
-            return chat.user.id == partner_id;
-        }
-    );
-
-    // If not found, nothing to update
-    if (it == m_chats.end()) {
-        return;
-    }
-
-    // Update message fields
-    it->last_message = text;
-    it->last_message_time = timestamp;
-    it->last_message_status = message_status;
-
-    // Move the updated chat to the front of the list if it's not already there
-    if (it != m_chats.begin()) {
-        // std::rotate shifts the range [first, it) forward and places
-        // the element at 'it' to the position 'first'.
-        // Rotate the range [m_chats.begin(), it + 1) left by one position.
-        std::rotate(m_chats.begin(), it, std::next(it));
     }
 }

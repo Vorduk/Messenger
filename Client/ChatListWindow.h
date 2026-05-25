@@ -21,6 +21,7 @@ public:
 
     void setOnUserSelected(std::function<void(const User&)> callback);
     void refreshUsers();
+
     void loadChats();
 
     /**
@@ -38,6 +39,18 @@ private:
     enum class Tab { Chats, Users };
     Tab m_activeTab = Tab::Chats;
 
+    /**
+     * @brief Searches for users on the server by username or display name.
+     *
+     * Sends an asynchronous search request to the server and immediately returns.
+     * The provided callback is stored internally and executed later when the server
+     * responds, without blocking the UI thread.
+     * 
+     * @param query Search string.
+     *
+     * @note Non-blocking. The function returns immediately; results appear
+     * in the next frame(s) after the server responds.
+     */
     void searchUsers(const std::string& query);
 
     // Rendering helpers.

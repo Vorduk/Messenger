@@ -22,5 +22,5 @@ public:
 
     virtual void getChats(const std::string& userId, std::function<void(bool success, std::vector<ChatListItem>)> callback) = 0;
 
-    virtual void searchUsers(const std::string& userId, const std::string& query, std::function<void(std::vector<ChatListItem>)> callback) = 0;
+    virtual void searchUsers(const std::string& userId, const std::string& query, std::function<void(bool success, std::vector<ChatListItem>)> callback) = 0;
 };
