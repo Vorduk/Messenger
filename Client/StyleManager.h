@@ -44,7 +44,7 @@ struct AvatarStyle {
 };
 
 /**
- * @brief All style settings used by the chat list window*
+ * @brief All style settings used by the chat list window.
  */
 struct ChatListWindowStyle {
     TextStyle main_text_style;
@@ -88,6 +88,42 @@ struct ChatListWindowStyle {
 };
 
 /**
+ * @brief Style settings for message block.
+ */
+struct MessageStyle {
+    ImVec4 sender_bg_color;
+    ImVec4 reciever_bg_color;
+    TextStyle text_style;
+    TextStyle time_text_style;
+    TextStyle status_style[6]; 
+    float bubble_padding;      
+    float bubble_margin;       
+    float max_text_width_ratio;
+    ImVec4 border_color;
+    float border_width;
+};
+
+/**
+ * @brief All style settings used by the chat window.
+ */
+struct ChatWindowStyle {
+    TextStyle chat_header_text_style;
+    std::string empty_chat_text;
+    TextStyle empty_chat_text_style;
+    std::string input_hint_text;
+    TextStyle input_hint_text_style;
+    std::string send_button_text;
+    TextStyle send_button_text_style;
+    ImVec4 send_button_color;
+    ImVec4 send_button_hover_color;
+    ImVec4 send_button_active_color;
+    ImVec4 input_background_color;
+    ImVec4 chat_background_color;
+    ImVec4 separator_color;
+    MessageStyle message_style;
+};
+
+/**
  * @brief Singleton manager that provides UI styles.
  * 
  * getChatListWindowStyle() and other style getters: The returned reference refers to the manager's
@@ -100,8 +136,9 @@ public:
 
     // Get style reference for particular window.
     const ChatListWindowStyle& getChatListWindowStyle() const;
+    const ChatListWindowStyle& getChatWindowStyle() const;
     //const ChatListWindowStyle& getLoginWindowStyle() const; // todo
-    //const ChatListWindowStyle& getChatWindowStyle() const; // todo
+    
 
 private:
     StyleManager();
@@ -111,9 +148,10 @@ private:
 
     // Fill the windows style structures.
     void setChatListWindowStyle();
-    // void setLoginWindowStyle(); // todo
-    // void setChatWindowStyle(); // todo
+    void setChatWindowStyle();
+    // // void setLoginWindowStyle(); // todo
 
     // All windows styles stored here.
-    ChatListWindowStyle m_chat_list_style;
+    ChatListWindowStyle m_chat_list_window_style;
+    ChatWindowStyle m_chat_window_style;
 };

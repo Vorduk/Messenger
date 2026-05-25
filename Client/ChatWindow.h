@@ -10,8 +10,20 @@
 
 class ChatWindow : public DockableWindow {
 public:
+
+    /**
+     * @brief Constructs the chat window.
+     */
     ChatWindow();
-    const char* getName() const override { return "Chat"; }
+
+    /**
+     * @return Window title used by the docking system.
+     */
+    const char* getName() const override;
+
+    /**
+     * @brief Renders the chat list UI. Called every frame.
+     */
     void render() override;
 
     void SetHandler(ISendMessageHandler* handler);

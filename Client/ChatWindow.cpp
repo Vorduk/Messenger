@@ -86,6 +86,11 @@ std::string ChatWindow::formatTime(const std::chrono::system_clock::time_point& 
     return std::string(buf);
 }
 
+const char* ChatWindow::getName() const
+{
+    return "Chat";
+}
+
 void ChatWindow::render() {
     std::vector<DisplayMessage> messages;
     std::vector<std::string> status_messages;
