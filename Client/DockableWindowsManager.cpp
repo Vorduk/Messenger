@@ -74,7 +74,9 @@ void DockableWindowsManager::begin() {
 
 void DockableWindowsManager::renderWindows() {
     // Draw each registered window – ImGui will automatically dock them.
-    for (const auto& [name, window] : m_windows) {
+    for (const std::pair<const std::string, DockableWindow*>& kv : m_windows) {
+        const std::string& name = kv.first;
+        DockableWindow* window = kv.second;
         ImGui::Begin(name.c_str());
         window->render();
         ImGui::End();

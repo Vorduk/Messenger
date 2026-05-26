@@ -49,9 +49,7 @@ SQLiteMessageRepository::~SQLiteMessageRepository() {
 }
 
 
-///////////////////////
 // User operations
-///////////////////////
 
 bool SQLiteMessageRepository::createUser(const User& user) {
     // Query.
@@ -232,9 +230,7 @@ User SQLiteMessageRepository::rowToUser(sqlite3_stmt* stmt) {
 }
 
 
-///////////////////////
 // Message operations
-///////////////////////
 
 bool SQLiteMessageRepository::saveMessage(const Message& msg) {
     const char* sql_query = R"(
@@ -370,9 +366,7 @@ Message SQLiteMessageRepository::rowToMessage(sqlite3_stmt* stmt) {
 }
 
 
-///////////////////////
 // Cache management
-///////////////////////
 
 void SQLiteMessageRepository::setMaxCachedMessages(int max_cached_messages) {
     m_max_cached_messages = max_cached_messages;
@@ -405,9 +399,7 @@ void SQLiteMessageRepository::pruneOldMessages() {
 }
 
 
-///////////////////////
 // Tables creation
-///////////////////////
 
 bool SQLiteMessageRepository::createTables() {
 
@@ -495,7 +487,7 @@ bool SQLiteMessageRepository::cacheChatList(const std::string& userId, const std
         return false;
     }
 
-    for (const auto& chat : chats) {
+    for (const ChatListItem& chat : chats) {
         sqlite3_bind_text(stmt, 1, userId.c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_bind_text(stmt, 2, chat.user.id.c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_bind_text(stmt, 3, chat.user.username.c_str(), -1, SQLITE_TRANSIENT);
@@ -542,7 +534,7 @@ std::vector<ChatListItem> SQLiteMessageRepository::getCachedChatList(const std::
 }
 
 bool SQLiteMessageRepository::saveMessages(const std::vector<Message>& messages) {
-    for (const auto& msg : messages) {
+    for (const Message& msg : messages) {
         if (!saveMessage(msg)) return false;
     }
     return true;

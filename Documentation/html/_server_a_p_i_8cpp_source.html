@@ -142,7 +142,7 @@ $(function(){initNavTree('_server_a_p_i_8cpp_source.html','',''); });
 <div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>        std::vector&lt;ChatListItem&gt; items;</div>
 <div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>        nlohmann::json resp = nlohmann::json::parse(response);</div>
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>        if (resp[<span class="stringliteral">&quot;status&quot;</span>] == <span class="stringliteral">&quot;ok&quot;</span>) {</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>            for (const auto&amp; jUser : resp[<span class="stringliteral">&quot;users&quot;</span>]) {</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>            for (const nlohmann::json&amp; jUser : resp[<span class="stringliteral">&quot;users&quot;</span>]) {</div>
 <div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>                ChatListItem item;</div>
 <div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>                User&amp; u = item.user;</div>
 <div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span> </div>
@@ -229,7 +229,7 @@ $(function(){initNavTree('_server_a_p_i_8cpp_source.html','',''); });
 <div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span>        try {</div>
 <div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span>            nlohmann::json resp = nlohmann::json::parse(response);</div>
 <div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span>            if (resp[<span class="stringliteral">&quot;status&quot;</span>] == <span class="stringliteral">&quot;ok&quot;</span>) {</div>
-<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span>                for (const auto&amp; jChat : resp[<span class="stringliteral">&quot;chats&quot;</span>]) {</div>
+<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span>                for (const nlohmann::json&amp; jChat : resp[<span class="stringliteral">&quot;chats&quot;</span>]) {</div>
 <div class="line"><a id="l00139" name="l00139"></a><span class="lineno">  139</span>                    ChatListItem item;</div>
 <div class="line"><a id="l00140" name="l00140"></a><span class="lineno">  140</span>                    User&amp; u = item.user;</div>
 <div class="line"><a id="l00141" name="l00141"></a><span class="lineno">  141</span>                    u.id = jChat[<span class="stringliteral">&quot;partner_id&quot;</span>];</div>
@@ -269,7 +269,7 @@ $(function(){initNavTree('_server_a_p_i_8cpp_source.html','',''); });
 <div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span>        try {</div>
 <div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span>            nlohmann::json resp = nlohmann::json::parse(response);</div>
 <div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span>            if (resp[<span class="stringliteral">&quot;status&quot;</span>] == <span class="stringliteral">&quot;ok&quot;</span>) {</div>
-<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span>                for (const auto&amp; jUser : resp[<span class="stringliteral">&quot;users&quot;</span>]) {</div>
+<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span>                for (const nlohmann::json&amp; jUser : resp[<span class="stringliteral">&quot;users&quot;</span>]) {</div>
 <div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span>                    ChatListItem item;</div>
 <div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span>                    User&amp; u = item.user;</div>
 <div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span>                    u.id = jUser[<span class="stringliteral">&quot;id&quot;</span>];</div>

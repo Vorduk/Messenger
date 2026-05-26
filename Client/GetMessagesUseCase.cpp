@@ -16,8 +16,8 @@ void GetMessagesUseCase::execute(const std::string& user_id, const std::string& 
                 callback(std::move(messages));
             }
             else {
-                auto localMessages = m_local_repo.getMessagesBetween(user_id, partner_id, limit, offset);
-                callback(std::move(localMessages));
+                std::vector<Message> local_messages = m_local_repo.getMessagesBetween(user_id, partner_id, limit, offset);
+                callback(std::move(local_messages));
             }
         });
 }

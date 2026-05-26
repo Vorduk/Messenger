@@ -179,61 +179,63 @@ $(function(){initNavTree('_dockable_windows_manager_8cpp_source.html','',''); })
 <div class="foldopen" id="foldopen00075" data-start="{" data-end="}">
 <div class="line"><a id="l00075" name="l00075"></a><span class="lineno"><a class="line" href="class_dockable_windows_manager.html#a755abadca006b813b45217522893d318">   75</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="class_dockable_windows_manager.html#a755abadca006b813b45217522893d318">DockableWindowsManager::renderWindows</a>() {</div>
 <div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>    <span class="comment">// Draw each registered window – ImGui will automatically dock them.</span></div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>    <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; [name, window] : m_windows) {</div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>        ImGui::Begin(name.c_str());</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>        window-&gt;render();</div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>        ImGui::End();</div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>    }</div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>}</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>    <span class="keywordflow">for</span> (<span class="keyword">const</span> std::pair&lt;const std::string, DockableWindow*&gt;&amp; kv : m_windows) {</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>        <span class="keyword">const</span> std::string&amp; name = kv.first;</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>        <a class="code hl_class" href="class_dockable_window.html">DockableWindow</a>* window = kv.second;</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>        ImGui::Begin(name.c_str());</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>        window-&gt;render();</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>        ImGui::End();</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>    }</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>}</div>
 </div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span> </div>
-<div class="foldopen" id="foldopen00084" data-start="{" data-end="}">
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno"><a class="line" href="class_dockable_windows_manager.html#a5bc8f0267088397bd04d50b6e47c2373">   84</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="class_dockable_windows_manager.html#a5bc8f0267088397bd04d50b6e47c2373">DockableWindowsManager::end</a>() {</div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    ImGui::End(); <span class="comment">// Close the dockspace container window.</span></div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>}</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span> </div>
+<div class="foldopen" id="foldopen00086" data-start="{" data-end="}">
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno"><a class="line" href="class_dockable_windows_manager.html#a5bc8f0267088397bd04d50b6e47c2373">   86</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="class_dockable_windows_manager.html#a5bc8f0267088397bd04d50b6e47c2373">DockableWindowsManager::end</a>() {</div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>    ImGui::End(); <span class="comment">// Close the dockspace container window.</span></div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>}</div>
 </div>
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span> </div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span> </div>
 <div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span> </div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span><span class="keywordtype">void</span> DockableWindowsManager::applyLayout(ImGuiID dockspace_id, <span class="keyword">const</span> <a class="code hl_struct" href="struct_dock_layout_node.html">DockLayoutNode</a>&amp; layout) {</div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>    <span class="comment">// Wipe any existing layout and create a fresh dockspace node.</span></div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>    ImGui::DockBuilderRemoveNode(dockspace_id);</div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>    ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);</div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>    ImGui::DockBuilderSetNodeSize(dockspace_id, ImGui::GetMainViewport()-&gt;WorkSize);</div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span> </div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>    <span class="comment">// Recursively build the node tree.</span></div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>    std::function&lt;void(ImGuiID, <span class="keyword">const</span> <a class="code hl_struct" href="struct_dock_layout_node.html">DockLayoutNode</a>&amp;)&gt; build_node;</div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>    build_node = [&amp;](ImGuiID node_id, <span class="keyword">const</span> <a class="code hl_struct" href="struct_dock_layout_node.html">DockLayoutNode</a>&amp; node) {</div>
-<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>        <span class="keywordflow">if</span> (node.type == DockLayoutNode::Window) {</div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>            <span class="comment">// Leaf: dock a named window into this node.</span></div>
-<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>            ImGui::DockBuilderDockWindow(node.window_name.c_str(), node_id);</div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>        }</div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>        <span class="keywordflow">else</span> <span class="keywordflow">if</span> (node.type == DockLayoutNode::Split) {</div>
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>            <span class="comment">// Split the node into two children and recurse.</span></div>
-<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>            ImGuiID child1_id, child2_id;</div>
-<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>            ImGui::DockBuilderSplitNode(node_id, node.split_dir, node.split_ratio,</div>
-<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>                &amp;child1_id, &amp;child2_id);</div>
-<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>            build_node(child1_id, *node.child1);</div>
-<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>            build_node(child2_id, *node.child2);</div>
-<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>        }</div>
-<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>        };</div>
-<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>    build_node(dockspace_id, layout);</div>
-<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span> </div>
-<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>    <span class="comment">// Finalize the docking layout.</span></div>
-<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>    ImGui::DockBuilderFinish(dockspace_id);</div>
-<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>}</div>
-<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span> </div>
-<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span><span class="keywordtype">bool</span> DockableWindowsManager::hasIniFile()<span class="keyword"> const </span>{</div>
-<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>    <span class="keyword">const</span> <span class="keywordtype">char</span>* ini_file = ImGui::GetIO().IniFilename;</div>
-<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>    <span class="keywordflow">if</span> (!ini_file || !*ini_file) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>    std::ifstream file(ini_file, std::ios::binary | std::ios::ate);</div>
-<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>    <span class="comment">// File exists and has more than a minimal size -&gt; saved layout present.</span></div>
-<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>    <span class="keywordflow">return</span> file.good() &amp;&amp; file.tellg() &gt; 2;</div>
-<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>}</div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span> </div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span> </div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span><span class="keywordtype">void</span> DockableWindowsManager::applyLayout(ImGuiID dockspace_id, <span class="keyword">const</span> <a class="code hl_struct" href="struct_dock_layout_node.html">DockLayoutNode</a>&amp; layout) {</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>    <span class="comment">// Wipe any existing layout and create a fresh dockspace node.</span></div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>    ImGui::DockBuilderRemoveNode(dockspace_id);</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>    ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);</div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>    ImGui::DockBuilderSetNodeSize(dockspace_id, ImGui::GetMainViewport()-&gt;WorkSize);</div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span> </div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>    <span class="comment">// Recursively build the node tree.</span></div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>    std::function&lt;void(ImGuiID, <span class="keyword">const</span> <a class="code hl_struct" href="struct_dock_layout_node.html">DockLayoutNode</a>&amp;)&gt; build_node;</div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>    build_node = [&amp;](ImGuiID node_id, <span class="keyword">const</span> <a class="code hl_struct" href="struct_dock_layout_node.html">DockLayoutNode</a>&amp; node) {</div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>        <span class="keywordflow">if</span> (node.type == DockLayoutNode::Window) {</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>            <span class="comment">// Leaf: dock a named window into this node.</span></div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>            ImGui::DockBuilderDockWindow(node.window_name.c_str(), node_id);</div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>        }</div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>        <span class="keywordflow">else</span> <span class="keywordflow">if</span> (node.type == DockLayoutNode::Split) {</div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>            <span class="comment">// Split the node into two children and recurse.</span></div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>            ImGuiID child1_id, child2_id;</div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>            ImGui::DockBuilderSplitNode(node_id, node.split_dir, node.split_ratio,</div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>                &amp;child1_id, &amp;child2_id);</div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>            build_node(child1_id, *node.child1);</div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>            build_node(child2_id, *node.child2);</div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>        }</div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>        };</div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>    build_node(dockspace_id, layout);</div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span> </div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>    <span class="comment">// Finalize the docking layout.</span></div>
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>    ImGui::DockBuilderFinish(dockspace_id);</div>
+<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>}</div>
+<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span> </div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span><span class="keywordtype">bool</span> DockableWindowsManager::hasIniFile()<span class="keyword"> const </span>{</div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>    <span class="keyword">const</span> <span class="keywordtype">char</span>* ini_file = ImGui::GetIO().IniFilename;</div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>    <span class="keywordflow">if</span> (!ini_file || !*ini_file) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>    std::ifstream file(ini_file, std::ios::binary | std::ios::ate);</div>
+<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>    <span class="comment">// File exists and has more than a minimal size -&gt; saved layout present.</span></div>
+<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>    <span class="keywordflow">return</span> file.good() &amp;&amp; file.tellg() &gt; 2;</div>
+<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span>}</div>
 <div class="ttc" id="aclass_dockable_window_html"><div class="ttname"><a href="class_dockable_window.html">DockableWindow</a></div><div class="ttdef"><b>Definition</b> <a href="_dockable_window_8h_source.html#l00004">DockableWindow.h:4</a></div></div>
 <div class="ttc" id="aclass_dockable_windows_manager_html_a456d162425bb13d68773a81c1c57270d"><div class="ttname"><a href="class_dockable_windows_manager.html#a456d162425bb13d68773a81c1c57270d">DockableWindowsManager::begin</a></div><div class="ttdeci">void begin()</div><div class="ttdoc">Must be called at the beginning of the UI frame. Creates the dockspace window and applies the current...</div><div class="ttdef"><b>Definition</b> <a href="#l00032">DockableWindowsManager.cpp:32</a></div></div>
 <div class="ttc" id="aclass_dockable_windows_manager_html_a4bab8a47125132cffd749e7e3ec88409"><div class="ttname"><a href="class_dockable_windows_manager.html#a4bab8a47125132cffd749e7e3ec88409">DockableWindowsManager::removeWindow</a></div><div class="ttdeci">void removeWindow(const std::string &amp;name)</div><div class="ttdoc">Remove a previously added window by its unique name.</div><div class="ttdef"><b>Definition</b> <a href="#l00019">DockableWindowsManager.cpp:19</a></div></div>
-<div class="ttc" id="aclass_dockable_windows_manager_html_a5bc8f0267088397bd04d50b6e47c2373"><div class="ttname"><a href="class_dockable_windows_manager.html#a5bc8f0267088397bd04d50b6e47c2373">DockableWindowsManager::end</a></div><div class="ttdeci">void end()</div><div class="ttdoc">Must be called at the end of the UI frame. Closes the dockspace window.</div><div class="ttdef"><b>Definition</b> <a href="#l00084">DockableWindowsManager.cpp:84</a></div></div>
+<div class="ttc" id="aclass_dockable_windows_manager_html_a5bc8f0267088397bd04d50b6e47c2373"><div class="ttname"><a href="class_dockable_windows_manager.html#a5bc8f0267088397bd04d50b6e47c2373">DockableWindowsManager::end</a></div><div class="ttdeci">void end()</div><div class="ttdoc">Must be called at the end of the UI frame. Closes the dockspace window.</div><div class="ttdef"><b>Definition</b> <a href="#l00086">DockableWindowsManager.cpp:86</a></div></div>
 <div class="ttc" id="aclass_dockable_windows_manager_html_a755abadca006b813b45217522893d318"><div class="ttname"><a href="class_dockable_windows_manager.html#a755abadca006b813b45217522893d318">DockableWindowsManager::renderWindows</a></div><div class="ttdeci">void renderWindows()</div><div class="ttdoc">Renders all currently added windows. Call this between begin() and end().</div><div class="ttdef"><b>Definition</b> <a href="#l00075">DockableWindowsManager.cpp:75</a></div></div>
 <div class="ttc" id="aclass_dockable_windows_manager_html_ab394130b3ba9e6f9d1a112640c75aa4e"><div class="ttname"><a href="class_dockable_windows_manager.html#ab394130b3ba9e6f9d1a112640c75aa4e">DockableWindowsManager::addWindow</a></div><div class="ttdeci">void addWindow(DockableWindow *window)</div><div class="ttdoc">Add a window to be rendered every frame inside the dockspace.</div><div class="ttdef"><b>Definition</b> <a href="#l00013">DockableWindowsManager.cpp:13</a></div></div>
 <div class="ttc" id="aclass_dockable_windows_manager_html_ac1a0ba49a61630a604d260f1b1e7535b"><div class="ttname"><a href="class_dockable_windows_manager.html#ac1a0ba49a61630a604d260f1b1e7535b">DockableWindowsManager::DockableWindowsManager</a></div><div class="ttdeci">DockableWindowsManager()</div><div class="ttdoc">Constructor. Configures the ImGui .ini filename if not already set.</div><div class="ttdef"><b>Definition</b> <a href="#l00007">DockableWindowsManager.cpp:7</a></div></div>

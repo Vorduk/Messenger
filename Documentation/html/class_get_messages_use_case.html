@@ -171,8 +171,8 @@ Public Member Functions</h2></td></tr>
 <div class="line"><span class="lineno">   16</span>                callback(std::move(messages));</div>
 <div class="line"><span class="lineno">   17</span>            }</div>
 <div class="line"><span class="lineno">   18</span>            <span class="keywordflow">else</span> {</div>
-<div class="line"><span class="lineno">   19</span>                <span class="keyword">auto</span> localMessages = m_local_repo.getMessagesBetween(user_id, partner_id, limit, offset);</div>
-<div class="line"><span class="lineno">   20</span>                callback(std::move(localMessages));</div>
+<div class="line"><span class="lineno">   19</span>                std::vector&lt;Message&gt; local_messages = m_local_repo.getMessagesBetween(user_id, partner_id, limit, offset);</div>
+<div class="line"><span class="lineno">   20</span>                callback(std::move(local_messages));</div>
 <div class="line"><span class="lineno">   21</span>            }</div>
 <div class="line"><span class="lineno">   22</span>        });</div>
 <div class="line"><span class="lineno">   23</span>}</div>

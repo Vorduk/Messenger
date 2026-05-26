@@ -148,7 +148,7 @@ void MessengerServer::run() {
 void MessengerServer::stop() {
     m_running = false;
     // Join all client threads
-    for (auto& t : m_threads) {
+    for (std::thread& t : m_threads) {
         if (t.joinable()) t.join();
     }
     m_threads.clear();
@@ -195,7 +195,9 @@ void MessengerServer::clientHandler(int client_fd) {
             std::string request = buffer.substr(0, pos);
             buffer.erase(0, pos + 1);
 
-            auto [response, user_id] = processRequest(request);
+            std::pair<std::string, std::string> result = processRequest(request);
+            std::string response = result.first;
+            std::string user_id = result.second;
             response += "\n";
 
             sendData(client_fd, ssl, response.c_str(), static_cast<int>(response.size()));
@@ -262,7 +264,7 @@ void MessengerServer::registerUserSocket(const std::string& user_id, int client_
 
 void MessengerServer::unregisterUserSocket(const std::string& user_id, int client_fd) {
     std::lock_guard<std::mutex> lock(m_user_sockets_mutex);
-    auto it = m_user_sockets.find(user_id);
+    std::unordered_map<std::string, int>::iterator it = m_user_sockets.find(user_id);
     if (it != m_user_sockets.end() && it->second == client_fd) {
         m_user_sockets.erase(it);
         // Reset the online status in the database
@@ -451,7 +453,7 @@ bool MessengerServer::createTables() {
     const char* idx3 = "CREATE INDEX IF NOT EXISTS idx_msg_receiver ON messages(receiver_id);";
 
     char* err = nullptr;
-    auto exec = [&](const char* sql) {
+    std::function<bool(const char*)> exec = [&](const char* sql) {
         if (sqlite3_exec(m_db, sql, nullptr, nullptr, &err) != SQLITE_OK) {
             LOG_ERROR("SQL error: {}", err);
             sqlite3_free(err);

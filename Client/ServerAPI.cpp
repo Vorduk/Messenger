@@ -48,7 +48,7 @@ void ServerAPI::getUsers(const std::string& user_id, std::function<void(std::vec
         std::vector<ChatListItem> items;
         nlohmann::json resp = nlohmann::json::parse(response);
         if (resp["status"] == "ok") {
-            for (const auto& jUser : resp["users"]) {
+            for (const nlohmann::json& jUser : resp["users"]) {
                 ChatListItem item;
                 User& u = item.user;
 
@@ -135,7 +135,7 @@ void ServerAPI::getChats(const std::string& userId, std::function<void(bool, std
         try {
             nlohmann::json resp = nlohmann::json::parse(response);
             if (resp["status"] == "ok") {
-                for (const auto& jChat : resp["chats"]) {
+                for (const nlohmann::json& jChat : resp["chats"]) {
                     ChatListItem item;
                     User& u = item.user;
                     u.id = jChat["partner_id"];
@@ -175,7 +175,7 @@ void ServerAPI::searchUsers(const std::string& userId, const std::string& query,
         try {
             nlohmann::json resp = nlohmann::json::parse(response);
             if (resp["status"] == "ok") {
-                for (const auto& jUser : resp["users"]) {
+                for (const nlohmann::json& jUser : resp["users"]) {
                     ChatListItem item;
                     User& u = item.user;
                     u.id = jUser["id"];

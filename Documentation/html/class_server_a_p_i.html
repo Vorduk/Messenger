@@ -190,7 +190,7 @@ virtual void&#160;</td><td class="memItemRight"><b>sendMessage</b> (const std::s
 <div class="line"><span class="lineno">  135</span>        try {</div>
 <div class="line"><span class="lineno">  136</span>            nlohmann::json resp = nlohmann::json::parse(response);</div>
 <div class="line"><span class="lineno">  137</span>            if (resp[<span class="stringliteral">&quot;status&quot;</span>] == <span class="stringliteral">&quot;ok&quot;</span>) {</div>
-<div class="line"><span class="lineno">  138</span>                for (const auto&amp; jChat : resp[<span class="stringliteral">&quot;chats&quot;</span>]) {</div>
+<div class="line"><span class="lineno">  138</span>                for (const nlohmann::json&amp; jChat : resp[<span class="stringliteral">&quot;chats&quot;</span>]) {</div>
 <div class="line"><span class="lineno">  139</span>                    ChatListItem item;</div>
 <div class="line"><span class="lineno">  140</span>                    User&amp; u = item.user;</div>
 <div class="line"><span class="lineno">  141</span>                    u.id = jChat[<span class="stringliteral">&quot;partner_id&quot;</span>];</div>
@@ -334,7 +334,7 @@ virtual void&#160;</td><td class="memItemRight"><b>sendMessage</b> (const std::s
 <div class="line"><span class="lineno">   48</span>        std::vector&lt;ChatListItem&gt; items;</div>
 <div class="line"><span class="lineno">   49</span>        nlohmann::json resp = nlohmann::json::parse(response);</div>
 <div class="line"><span class="lineno">   50</span>        if (resp[<span class="stringliteral">&quot;status&quot;</span>] == <span class="stringliteral">&quot;ok&quot;</span>) {</div>
-<div class="line"><span class="lineno">   51</span>            for (const auto&amp; jUser : resp[<span class="stringliteral">&quot;users&quot;</span>]) {</div>
+<div class="line"><span class="lineno">   51</span>            for (const nlohmann::json&amp; jUser : resp[<span class="stringliteral">&quot;users&quot;</span>]) {</div>
 <div class="line"><span class="lineno">   52</span>                ChatListItem item;</div>
 <div class="line"><span class="lineno">   53</span>                User&amp; u = item.user;</div>
 <div class="line"><span class="lineno">   54</span> </div>
@@ -517,7 +517,7 @@ virtual void&#160;</td><td class="memItemRight"><b>sendMessage</b> (const std::s
 <div class="line"><span class="lineno">  175</span>        try {</div>
 <div class="line"><span class="lineno">  176</span>            nlohmann::json resp = nlohmann::json::parse(response);</div>
 <div class="line"><span class="lineno">  177</span>            if (resp[<span class="stringliteral">&quot;status&quot;</span>] == <span class="stringliteral">&quot;ok&quot;</span>) {</div>
-<div class="line"><span class="lineno">  178</span>                for (const auto&amp; jUser : resp[<span class="stringliteral">&quot;users&quot;</span>]) {</div>
+<div class="line"><span class="lineno">  178</span>                for (const nlohmann::json&amp; jUser : resp[<span class="stringliteral">&quot;users&quot;</span>]) {</div>
 <div class="line"><span class="lineno">  179</span>                    ChatListItem item;</div>
 <div class="line"><span class="lineno">  180</span>                    User&amp; u = item.user;</div>
 <div class="line"><span class="lineno">  181</span>                    u.id = jUser[<span class="stringliteral">&quot;id&quot;</span>];</div>

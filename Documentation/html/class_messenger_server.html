@@ -251,7 +251,7 @@ Public Member Functions</h2></td></tr>
 <div class="fragment"><div class="line"><span class="lineno">  148</span>                           {</div>
 <div class="line"><span class="lineno">  149</span>    m_running = <span class="keyword">false</span>;</div>
 <div class="line"><span class="lineno">  150</span>    <span class="comment">// Join all client threads</span></div>
-<div class="line"><span class="lineno">  151</span>    <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; t : m_threads) {</div>
+<div class="line"><span class="lineno">  151</span>    <span class="keywordflow">for</span> (std::thread&amp; t : m_threads) {</div>
 <div class="line"><span class="lineno">  152</span>        <span class="keywordflow">if</span> (t.joinable()) t.join();</div>
 <div class="line"><span class="lineno">  153</span>    }</div>
 <div class="line"><span class="lineno">  154</span>    m_threads.clear();</div>
