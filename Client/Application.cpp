@@ -7,7 +7,6 @@
 
 Application::Application(int window_width, int window_height, const std::string& window_title)
     : m_window(window_width, window_height, window_title)
-
     , m_imgui_layer(m_window)
     , m_network("127.0.0.1", 8080, true)
     , m_server_api(m_network)
@@ -24,7 +23,9 @@ Application::Application(int window_width, int window_height, const std::string&
 
     // Login window
     m_login_window = std::make_unique<LoginWindow>(*m_login_uc, *m_register_uc,
-        [this](const std::string& user_id, const std::string& username) { onUserLoggedIn(user_id, username); });
+        [this](const std::string& user_id, const std::string& username, const std::string& display_name) {
+            onUserLoggedIn(user_id, username, display_name);
+        });
     m_dock_manager.addWindow(m_login_window.get());
     using Node = DockLayoutNode;
     m_dock_manager.setCurrentLayout(Node::makeWindow("Login"));
@@ -32,13 +33,12 @@ Application::Application(int window_width, int window_height, const std::string&
     // Set up automatic re-login after reconnection
     m_network.setReconnectCallback([this]() {
         if (!m_current_username.empty()) {
-            // Try to re-login with the same username
             m_login_uc->execute(m_current_username,
-                [this](bool success, const std::string& user_id_or_error) {
+                [this](bool success, const std::string& user_id_or_error, const std::string& display_name) {
                     if (success) {
                         m_current_user_id = user_id_or_error;
+                        m_current_display_name = display_name;  // update display name too
                         LOG_INFO("Re-logged in after reconnection");
-                        // Refresh chat list to get updated online statuses
                         if (m_chat_list_window) m_chat_list_window->refreshUsers();
                     }
                     else {
@@ -46,7 +46,8 @@ Application::Application(int window_width, int window_height, const std::string&
                     }
                 });
         }
-        });
+    }
+    );
 }
 
 Application::~Application() { 
@@ -88,22 +89,20 @@ void Application::renderUI() {
     m_dock_manager.end();
 }
 
-void Application::onUserLoggedIn(const std::string& user_id, const std::string& username) {
+void Application::onUserLoggedIn(const std::string& user_id, const std::string& username, const std::string& display_name) {
     m_current_user_id = user_id;
-    m_current_username = username;  // Save for reconnection
+    m_current_username = username;
+    m_current_display_name = display_name;
     m_logged_in = true;
 
     m_dock_manager.removeWindow("Login");
     m_login_window.reset();
 
-    // Send use case
     m_send_uc = std::make_unique<SendMessageUseCase>(m_server_api, *this, m_local_repo);
-    // Get messages use case
     m_get_messages_uc = std::make_unique<GetMessagesUseCase>(m_server_api, m_local_repo);
 
-    StyleManager& style_manager = StyleManager::getInstance(); 
+    StyleManager& style_manager = StyleManager::getInstance();
 
-    // Chat windows
     m_chat_window = std::make_unique<ChatWindow>(style_manager.getChatWindowStyle());
 
     struct SendHandler : ISendMessageHandler {
@@ -117,18 +116,15 @@ void Application::onUserLoggedIn(const std::string& user_id, const std::string& 
     };
     m_send_handler = std::make_shared<SendHandler>(*m_send_uc);
     m_chat_window->SetHandler(m_send_handler.get());
-
     m_chat_window->SetMessageLoader(m_get_messages_uc.get());
 
     m_get_chats_uc = std::make_unique<GetChatsUseCase>(m_server_api);
-
-    
 
     m_chat_list_window = std::make_unique<ChatListWindow>(
         style_manager.getChatListWindowStyle(),
         *m_get_users_uc,
         *m_get_chats_uc,
-        m_local_repo, 
+        m_local_repo,
         m_current_user_id
     );
     m_chat_list_window->setOnUserSelected([this](const User& user) { selectContact(user); });
@@ -147,10 +143,8 @@ void Application::onUserLoggedIn(const std::string& user_id, const std::string& 
 
 void Application::selectContact(const User& user) {
     m_current_chat_partner_id = user.id;
-
     if (m_chat_window) {
         m_chat_window->SetUsers(m_current_user_id, user.id, user.display_name);
-        
         m_get_messages_uc->execute(m_current_user_id, user.id, 50, 0,
             [this](std::vector<Message> messages) {
                 m_chat_window->SetHistory(messages);

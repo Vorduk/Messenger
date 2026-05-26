@@ -5,34 +5,38 @@
 
 ServerAPI::ServerAPI(AsyncNetworkClient& client) : m_client(client) {}
 
-void ServerAPI::registerUser(const std::string& username, std::function<void(bool, const std::string&)> callback) {
+void ServerAPI::registerUser(const std::string& username, const std::string& display_name, const std::string& birthday, std::function<void(bool, const std::string&, const std::string&)> callback) {
     nlohmann::json req;
     req["action"] = "register";
     req["username"] = username;
+    req["display_name"] = display_name;
+    req["birthday"] = birthday;
     m_client.sendRequest(req.dump(), [callback](const std::string& response) {
         nlohmann::json resp = nlohmann::json::parse(response);
         if (resp["status"] == "ok") {
-            callback(true, resp["user_id"]);
+            callback(true, resp["user_id"], resp.value("display_name", ""));
         }
         else {
-            callback(false, resp.value("message", std::string("Unknown error")));
+            callback(false, resp.value("message", std::string("Unknown error")), "");
         }
         });
 }
 
-void ServerAPI::login(const std::string& username, std::function<void(bool, const std::string&)> callback) {
+void ServerAPI::login(const std::string& username,
+    std::function<void(bool, const std::string&, const std::string&)> callback) {
     nlohmann::json req;
     req["action"] = "login";
     req["username"] = username;
     m_client.sendRequest(req.dump(), [callback](const std::string& response) {
         nlohmann::json resp = nlohmann::json::parse(response);
         if (resp["status"] == "ok") {
-            callback(true, resp["user_id"]);
+            callback(true, resp["user_id"], resp.value("display_name", ""));
         }
         else {
-            callback(false, resp.value("message", std::string("Unknown error")));
+            callback(false, resp.value("message", std::string("Unknown error")), "");
         }
-        });
+    }
+    );
 }
 
 void ServerAPI::getUsers(const std::string& user_id, std::function<void(std::vector<ChatListItem>)> callback) {

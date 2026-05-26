@@ -7,9 +7,10 @@ class AsyncNetworkClient;
 class ServerAPI : public IServerAPI {
 public:
     explicit ServerAPI(AsyncNetworkClient& client);
-    void registerUser(const std::string& username, std::function<void(bool, const std::string&)> callback) override;
+
+    virtual void registerUser(const std::string& username, const std::string& display_name, const std::string& birthday, std::function<void(bool success, const std::string& user_id_or_error, const std::string& display_name)> callback) override;
     
-    void login(const std::string& username, std::function<void(bool, const std::string&)> callback) override;
+    void login(const std::string& username, std::function<void(bool, const std::string&, const std::string&)> callback) override;
     
     void getUsers(const std::string& user_id, std::function<void(std::vector<ChatListItem>)> callback) override;
     

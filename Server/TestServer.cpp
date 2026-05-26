@@ -263,10 +263,13 @@ std::pair<std::string, std::string> TestServer::processRequest(const std::string
 
     if (action == "register") {
         std::string username = req.value("username", "");
-        std::string userId, error;
-        if (registerUser(username, userId, error)) {
+        std::string display_name = req.value("display_name", "");
+        std::string birthday = req.value("birthday", "");
+        std::string userId, outDisplayName, error;
+        if (registerUser(username, display_name, birthday, userId, outDisplayName, error)) {
             resp["status"] = "ok";
             resp["user_id"] = userId;
+            resp["display_name"] = outDisplayName; // send display_name back
             authenticatedUserId = userId;
         }
         else {
@@ -276,10 +279,11 @@ std::pair<std::string, std::string> TestServer::processRequest(const std::string
     }
     else if (action == "login") {
         std::string username = req.value("username", "");
-        std::string userId, error;
-        if (loginUser(username, userId, error)) {
+        std::string userId, outDisplayName, error;
+        if (loginUser(username, userId, outDisplayName, error)) {
             resp["status"] = "ok";
             resp["user_id"] = userId;
+            resp["display_name"] = outDisplayName; // send display_name back
             authenticatedUserId = userId;
         }
         else {
@@ -381,8 +385,13 @@ std::string TestServer::generateId() {
     return generateUUID();  // общий генератор UUID
 }
 
-bool TestServer::registerUser(const std::string& username, std::string& outUserId, std::string& outError) {
-    // Проверка уникальности
+bool TestServer::registerUser(const std::string& username,
+    const std::string& display_name,
+    const std::string& birthday,
+    std::string& outUserId,
+    std::string& outDisplayName,
+    std::string& outError) {
+    // Check for existing username
     sqlite3_stmt* stmt;
     const char* checkSql = "SELECT id FROM users WHERE username = ?;";
     if (sqlite3_prepare_v2(m_db, checkSql, -1, &stmt, nullptr) == SQLITE_OK) {
@@ -396,9 +405,12 @@ bool TestServer::registerUser(const std::string& username, std::string& outUserI
     }
 
     std::string id = generateId();
+    // Use the provided display_name if not empty, otherwise fall back to username
+    std::string final_display_name = display_name.empty() ? username : display_name;
+
     const char* insertSql = R"(
         INSERT INTO users (id, username, display_name, bio, avatar_path, birthday, is_online)
-        VALUES (?, ?, ?, '', '', '', 1);
+        VALUES (?, ?, ?, '', '', ?, 1);
     )";
     if (sqlite3_prepare_v2(m_db, insertSql, -1, &stmt, nullptr) != SQLITE_OK) {
         outError = "DB error";
@@ -406,7 +418,8 @@ bool TestServer::registerUser(const std::string& username, std::string& outUserI
     }
     sqlite3_bind_text(stmt, 1, id.c_str(), -1, SQLITE_TRANSIENT);
     sqlite3_bind_text(stmt, 2, username.c_str(), -1, SQLITE_TRANSIENT);
-    sqlite3_bind_text(stmt, 3, username.c_str(), -1, SQLITE_TRANSIENT); // display_name = username
+    sqlite3_bind_text(stmt, 3, final_display_name.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 4, birthday.c_str(), -1, SQLITE_TRANSIENT);
     if (sqlite3_step(stmt) != SQLITE_DONE) {
         outError = "Could not create user";
         sqlite3_finalize(stmt);
@@ -414,12 +427,16 @@ bool TestServer::registerUser(const std::string& username, std::string& outUserI
     }
     sqlite3_finalize(stmt);
     outUserId = id;
+    outDisplayName = final_display_name;
     return true;
 }
 
-bool TestServer::loginUser(const std::string& username, std::string& outUserId, std::string& outError) {
+bool TestServer::loginUser(const std::string& username,
+    std::string& outUserId,
+    std::string& outDisplayName,
+    std::string& outError) {
     sqlite3_stmt* stmt;
-    const char* sql = "SELECT id FROM users WHERE username = ?;";
+    const char* sql = "SELECT id, display_name FROM users WHERE username = ?;";
     if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
         outError = "DB error";
         return false;
@@ -427,8 +444,10 @@ bool TestServer::loginUser(const std::string& username, std::string& outUserId, 
     sqlite3_bind_text(stmt, 1, username.c_str(), -1, SQLITE_TRANSIENT);
     if (sqlite3_step(stmt) == SQLITE_ROW) {
         outUserId = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+        outDisplayName = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
         sqlite3_finalize(stmt);
-        // Установить онлайн
+
+        // Set online status
         const char* updateSql = "UPDATE users SET is_online = 1 WHERE id = ?;";
         if (sqlite3_prepare_v2(m_db, updateSql, -1, &stmt, nullptr) == SQLITE_OK) {
             sqlite3_bind_text(stmt, 1, outUserId.c_str(), -1, SQLITE_TRANSIENT);

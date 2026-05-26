@@ -41,14 +41,6 @@ public:
     void run() override;    ///< Run main loop.
     void stop() override;   ///< Stop main loop.
 
-
-
-
-
-
-
-
-
     void onMessageSent(const std::string& message_id, const std::string& message_text, const std::string& confirmation) override; ///< Presenter callback for success.
     void onError(const std::string& error) override;                                              ///< Presenter callback for errors.
 
@@ -56,10 +48,7 @@ private:
 
     void renderUI();                                        ///< Render all registered windows.
 
-
-
-
-    void onUserLoggedIn(const std::string& user_id, const std::string& username);        ///< Called after successful login/register.
+    void onUserLoggedIn(const std::string& user_id, const std::string& username, const std::string& display_name);        ///< Called after successful login/register.
     void selectContact(const User& user);                   ///< Handle contact selection from ChatListWindow.
 
     std::atomic<bool> m_running{ false };                   ///< Main loop flag.
@@ -93,6 +82,7 @@ private:
     bool m_logged_in = false;                               ///< Whether a user is currently logged in.
     std::string m_current_user_id;                          ///< ID of the logged-in user.
     std::string m_current_username;
+    std::string m_current_display_name;
     std::string m_current_chat_partner_id;
 
     std::shared_ptr<ISendMessageHandler> m_send_handler;

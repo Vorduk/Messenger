@@ -30,8 +30,8 @@ private:
     std::pair<std::string, std::string> processRequest(const std::string& json);
 
     // Database operations
-    bool registerUser(const std::string& username, std::string& outUserId, std::string& outError);
-    bool loginUser(const std::string& username, std::string& outUserId, std::string& outError);
+    bool registerUser(const std::string& username, const std::string& display_name, const std::string& birthday, std::string& outUserId, std::string& outDisplayName, std::string& outError);
+    bool loginUser(const std::string& username, std::string& outUserId, std::string& outDisplayName, std::string& outError);
     std::string getUsers(const std::string& excludeUserId);
     bool sendMessage(const std::string& senderId, const std::string& receiverId, const std::string& text, std::string& outMessageId, long long& outTimestamp);
     std::string getMessages(const std::string& user1, const std::string& user2, int limit, int offset);
