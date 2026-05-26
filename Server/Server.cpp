@@ -1,5 +1,5 @@
 ﻿#include "pch.h"
-#include "TestServer.h"
+#include "MessengerServer.h"
 #include "Logger.h"
 
 #include <iostream>
@@ -15,7 +15,7 @@ int main() {
     Logger::getInstance().initialize("server.log");
     Logger::getInstance().setMinimalLevel(Logger::Level::Info);
 
-    TestServer server(8080, "server.db", "server.crt", "server.key");
+    MessengerServer server(8080, "server.db", "server.crt", "server.key");
 
     server.run();
     return 0;
