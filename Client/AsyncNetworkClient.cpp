@@ -3,11 +3,13 @@
 #include "TcpClient.h"
 #include "LogMacros.h"
 
-AsyncNetworkClient::AsyncNetworkClient(const std::string& server_address, int port)
-    : m_server_address(server_address), m_port(port) {
+AsyncNetworkClient::AsyncNetworkClient(const std::string& server_address, int port, bool use_tls)
+    : m_server_address(server_address), m_port(port), m_use_tls(use_tls) {
 
     m_client = std::make_unique<TcpClient>(server_address, port);
-
+    if (m_use_tls) {
+        m_client->enableTls();
+    }
     if (m_client->connectToServer()) {
         m_is_server_connected = true;
         LOG_INFO("Connected to server {}:{}", server_address, port);
@@ -69,4 +71,9 @@ void AsyncNetworkClient::pollCallbacks() {
 
 void AsyncNetworkClient::setReconnectCallback(ReconnectCallback callback) {
     m_reconnect_callback = std::move(callback);
+}
+
+void AsyncNetworkClient::enableTls()
+{
+    m_client->enableTls();
 }

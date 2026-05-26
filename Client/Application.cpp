@@ -9,16 +9,12 @@ Application::Application(int window_width, int window_height, const std::string&
     : m_window(window_width, window_height, window_title)
 
     , m_imgui_layer(m_window)
-    , m_network("127.0.0.1", 8080)
+    , m_network("127.0.0.1", 8080, true)
     , m_server_api(m_network)
     , m_local_repo("messenger.db")
     , m_user_manager(m_local_repo)
 {
-
-
-
-
-
+    m_network.enableTls();
 
     // Use cases
     m_login_uc = std::make_unique<LoginUseCase>(m_server_api);

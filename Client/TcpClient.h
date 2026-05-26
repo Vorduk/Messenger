@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <openssl/ssl.h>
 
 /**
  * @brief TCP client for communicating with the messenger server.
@@ -36,8 +37,12 @@ public:
 	void setTimeouts(int send_timeout_ms, int recv_timeout_ms);
 	void disconnect();
 
+	// Turn on TLS-encryption (Call before connectToServer)
+	void enableTls();
+
 private:
 	void closeSocket();
+	void cleanupSsl();	///< Free sscl resources.
 
 	int m_socket = -1;					///< Socket descriptor, (-1 means not created).
 	std::string m_server_address;		///< Server ip or name.
@@ -45,5 +50,10 @@ private:
 	bool m_is_server_connected = false;	///< Connection flag.
     std::string m_leftover_buffer;      ///< Buffer for the bytes that left after /n after request	
 	bool m_has_timeouts = false;
+
+	// TLS
+	bool m_use_tls = false;
+	SSL_CTX* m_ssl_ctx = nullptr;
+	SSL* m_ssl = nullptr;
 };
 

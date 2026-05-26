@@ -42,7 +42,7 @@ public:
 
     using ReconnectCallback = std::function<void()>; ///< Called after successful reconnection
 
-    AsyncNetworkClient(const std::string& server_address, int port);
+    AsyncNetworkClient(const std::string& server_address, int port, bool use_tls = true);
     ~AsyncNetworkClient();
 
     /**
@@ -75,6 +75,9 @@ public:
 
     /// Set callback to be invoked after automatic reconnection succeeds
     void setReconnectCallback(ReconnectCallback callback);
+
+    // Enable tls.
+    void enableTls();
 
 private:
     /**
@@ -112,4 +115,7 @@ private:
      * @brief Processes a single request from the front of the queue.
      */
     void processQueue(Request request);
+
+    // Tls.
+    bool m_use_tls;
 };

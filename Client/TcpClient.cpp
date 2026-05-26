@@ -12,6 +12,13 @@
 #include <unistd.h>
 #endif
 
+// Call one time at app start.
+void initializeOpenSSL() {
+    SSL_library_init();
+    SSL_load_error_strings();
+    OpenSSL_add_all_algorithms();
+}
+
 TcpClient::TcpClient(const std::string& server_address, int port)
     : m_server_address(server_address), m_port(port) {
 #ifdef _WIN32
@@ -21,6 +28,7 @@ TcpClient::TcpClient(const std::string& server_address, int port)
 }
 
 TcpClient::~TcpClient() {
+    cleanupSsl();
     if (m_socket != -1) {
 #ifdef _WIN32
         closesocket(m_socket);
@@ -61,57 +69,102 @@ bool TcpClient::connectToServer() {
 
     setTimeouts(5000, 5000);
 
+    if (m_use_tls) {
+        m_ssl = SSL_new(m_ssl_ctx);
+        SSL_set_fd(m_ssl, m_socket);
+        if (SSL_connect(m_ssl) <= 0) {
+            ERR_print_errors_fp(stderr);
+            cleanupSsl();
+            closeSocket();
+            return false;
+        }
+    }
+
     return true;
 }
 
 std::string TcpClient::sendRequest(const std::string& request_json) {
-    if (!m_is_server_connected) return R"({"status":"error","message":"Not connected"})"; // Return json string with error.
+    // Return an error immediately if the client is not connected.
+    if (!m_is_server_connected)
+        return R"({"status":"error","message":"Not connected"})";
 
-    std::string data = request_json + "\n"; // Mark the end of message.
+    // Append a newline character to mark the end of the request.
+    std::string data = request_json + "\n";
 
-    // Send data.
-    int sent = 0;
+    // Send the request data.
+    // For TLS connections we use SSL_write(); otherwise we use plain send().
+    int total_sent = 0;
+    int len = static_cast<int>(data.size());
+    while (total_sent < len) {
+        int sent = 0;
+        if (m_use_tls) {
+            // SSL_write returns the number of bytes written, or <= 0 on error.
+            sent = SSL_write(m_ssl, data.c_str() + total_sent, len - total_sent);
+        }
+        else {
+            // On Windows MSG_NOSIGNAL is not defined; use 0 instead.
+            // On Linux MSG_NOSIGNAL prevents the SIGPIPE signal if the socket is broken.
 #ifdef _WIN32
-    sent = send(m_socket, data.c_str(), static_cast<int>(data.size()), 0);
+            sent = send(m_socket, data.c_str() + total_sent, len - total_sent, 0);
 #else
-    sent = send(m_socket, data.c_str(), data.size(), MSG_NOSIGNAL); // MSG_NOSIGNAL prevents SIGPIPE
+            sent = send(m_socket, data.c_str() + total_sent, len - total_sent, MSG_NOSIGNAL);
 #endif
-    if (sent <= 0) {
-        // Send failed – server likely disconnected
-        disconnect();
-        return R"({"status":"error","message":"Send failed, disconnected"})";
+        }
+
+        // If send fails, disconnect and return an error response.
+        if (sent <= 0) {
+            disconnect();
+            return R"({"status":"error","message":"Send failed, disconnected"})";
+        }
+        total_sent += sent;
     }
 
-    // Get response.
+    // Receive the response.
+    // For TLS we use SSL_read(); otherwise we use plain recv().
     std::string response;
     char buf[4096];
     while (true) {
         memset(buf, 0, sizeof(buf));
+        int bytes_read = 0;
+        if (m_use_tls) {
+            // SSL_read returns the number of bytes read, or <= 0 on error/EOF.
+            bytes_read = SSL_read(m_ssl, buf, sizeof(buf) - 1);
+        }
+        else {
 #ifdef _WIN32
-        int bytes_readed = recv(m_socket, buf, sizeof(buf) - 1, 0);
+            bytes_read = recv(m_socket, buf, sizeof(buf) - 1, 0);
 #else
-        int bytes_readed = recv(m_socket, buf, sizeof(buf) - 1, 0);
+            bytes_read = recv(m_socket, buf, sizeof(buf) - 1, 0);
 #endif
-        if (bytes_readed <= 0) {
-            // Disconnected or error.
+        }
+
+        if (bytes_read <= 0) {
+            // Connection closed or error occurred.
             m_is_server_connected = false;
             closeSocket();
             return R"({"status":"error","message":"Server disconnected"})";
         }
-        m_leftover_buffer.append(buf, bytes_readed); // Add leftover bytes from previous request.
 
-        if (m_leftover_buffer.find('\n') != std::string::npos) break; // Exit after full message was acquired.
+        // Append received data to the leftover buffer.
+        m_leftover_buffer.append(buf, bytes_read);
+
+        // If a complete line (terminated by '\n') is found, stop reading.
+        if (m_leftover_buffer.find('\n') != std::string::npos) {
+            break;
+        }
     }
 
-    // Get first full message (to and with '\n')
+    // Extract the first complete JSON line from the buffer.
     size_t newline_pos = m_leftover_buffer.find('\n');
     if (newline_pos == std::string::npos) {
+        // This should not happen because we already checked for '\n'.
         return R"({"status":"error","message":"Invalid server response"})";
     }
+
     response = m_leftover_buffer.substr(0, newline_pos);
 
-    // Delete used part from the buffer (including '\n').
-    // Leftover left.
+    // Remove the used line (including the newline) from the buffer,
+    // leaving any remaining data for the next read.
     m_leftover_buffer.erase(0, newline_pos + 1);
 
     return response;
@@ -147,6 +200,13 @@ void TcpClient::disconnect() {
     closeSocket();
 }
 
+void TcpClient::enableTls() {
+    m_use_tls = true;
+    m_ssl_ctx = SSL_CTX_new(TLS_client_method());
+    // For development only – accept any certificate.
+    SSL_CTX_set_verify(m_ssl_ctx, SSL_VERIFY_NONE, nullptr);
+}
+
 void TcpClient::closeSocket() {
     if (m_socket != -1) {
 #ifdef _WIN32
@@ -155,5 +215,12 @@ void TcpClient::closeSocket() {
         close(m_socket);
 #endif
         m_socket = -1;
+    }
+}
+
+void TcpClient::cleanupSsl() {
+    if (m_ssl_ctx) {
+        SSL_CTX_free(m_ssl_ctx);
+        m_ssl_ctx = nullptr;
     }
 }

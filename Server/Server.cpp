@@ -4,15 +4,18 @@
 
 #include <iostream>
 
-#include <openssl/ssl.h>
+void initializeOpenSSL() {
+    SSL_library_init();
+    SSL_load_error_strings();
+    OpenSSL_add_all_algorithms();
+}
 
 int main() {
+    initializeOpenSSL();
     Logger::getInstance().initialize("server.log");
     Logger::getInstance().setMinimalLevel(Logger::Level::Info);
-    TestServer server(8080, "server.db");
 
-    std::cout << "OpenSSL version: " << SSLeay_version(SSLEAY_VERSION) << std::endl;
-    std::cout << "OpenSSL version number: " << SSLeay() << std::endl;
+    TestServer server(8080, "server.db", "server.crt", "server.key");
 
     server.run();
     return 0;

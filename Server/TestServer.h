@@ -9,6 +9,7 @@
 #ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <openssl/ssl.h>
 #pragma comment(lib, "ws2_32.lib")
 #else
 #include <sys/socket.h>
@@ -18,7 +19,7 @@
 
 class TestServer {
 public:
-    TestServer(int port, const std::string& dbPath);
+    TestServer(int port, const std::string& dbPath, const std::string& cert_file, const std::string& key_file);
     ~TestServer();
 
     void run();
@@ -46,4 +47,7 @@ private:
     std::vector<std::thread> m_threads;
     std::unordered_map<std::string, int> m_user_sockets;
     std::mutex m_user_sockets_mutex;
+
+    SSL_CTX* m_ssl_ctx = nullptr;
+    bool m_use_tls = false;
 };

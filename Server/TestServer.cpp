@@ -16,9 +16,7 @@
 #include <unistd.h>
 #endif
 
-// ---------- Constructor / Destructor ----------
-
-TestServer::TestServer(int port, const std::string& dbPath) {
+TestServer::TestServer(int port, const std::string& dbPath, const std::string& cert_file, const std::string& key_file) {
 #ifdef _WIN32
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
@@ -82,6 +80,17 @@ TestServer::TestServer(int port, const std::string& dbPath) {
 #endif
 
     LOG_INFO("Server listening on port {}", port);
+
+    if (!cert_file.empty() && !key_file.empty()) {
+        m_ssl_ctx = SSL_CTX_new(TLS_server_method());
+        SSL_CTX_set_ecdh_auto(m_ssl_ctx, 1);
+        if (SSL_CTX_use_certificate_file(m_ssl_ctx, cert_file.c_str(), SSL_FILETYPE_PEM) <= 0 ||
+            SSL_CTX_use_PrivateKey_file(m_ssl_ctx, key_file.c_str(), SSL_FILETYPE_PEM) <= 0) {
+            LOG_ERROR("Failed to load certificate/key");
+            exit(1);
+        }
+        m_use_tls = true;
+    }
 }
 
 TestServer::~TestServer() {
@@ -132,23 +141,51 @@ void TestServer::stop() {
 // ---------- Client Handler ----------
 
 void TestServer::clientHandler(int clientFd) {
+    // Create an SSL object if TLS is enabled on the server.
+    SSL* ssl = nullptr;
+    if (m_use_tls) {
+        ssl = SSL_new(m_ssl_ctx);
+        SSL_set_fd(ssl, clientFd);
+        // Perform the TLS handshake with the client.
+        if (SSL_accept(ssl) <= 0) {
+            LOG_ERROR("SSL_accept failed");
+            SSL_free(ssl);
+#ifdef _WIN32
+            closesocket(clientFd);
+#else
+            close(clientFd);
+#endif
+            return;
+        }
+    }
+
     std::string buffer;
     char tmp[4096];
-    std::string currentUserId;   // запомним, если пользователь авторизовался
+    std::string currentUserId;   // Remember the user ID once authentication succeeds.
 
     while (m_running) {
         memset(tmp, 0, sizeof(tmp));
+        int bytes;
+        // Read data: use SSL if available, otherwise fall back to plain recv.
+        if (ssl) {
+            bytes = SSL_read(ssl, tmp, sizeof(tmp) - 1);
+        }
+        else {
 #ifdef _WIN32
-        int bytes = recv(clientFd, tmp, sizeof(tmp) - 1, 0);
+            bytes = recv(clientFd, tmp, sizeof(tmp) - 1, 0);
 #else
-        int bytes = recv(clientFd, tmp, sizeof(tmp) - 1, 0);
+            bytes = recv(clientFd, tmp, sizeof(tmp) - 1, 0);
 #endif
+        }
+
+        // If no data or an error occurred, the client has disconnected.
         if (bytes <= 0) {
             LOG_INFO("Client disconnected");
             break;
         }
         buffer.append(tmp, bytes);
 
+        // Process complete lines (each terminated by '\n').
         size_t pos;
         while ((pos = buffer.find('\n')) != std::string::npos) {
             std::string request = buffer.substr(0, pos);
@@ -156,12 +193,20 @@ void TestServer::clientHandler(int clientFd) {
 
             auto [response, userId] = processRequest(request);
             response += "\n";
-#ifdef _WIN32
-            send(clientFd, response.c_str(), response.size(), 0);
-#else
-            send(clientFd, response.c_str(), response.size(), 0);
-#endif
 
+            // Send the response: use SSL_write if TLS is active, otherwise plain send.
+            if (ssl) {
+                SSL_write(ssl, response.c_str(), static_cast<int>(response.size()));
+            }
+            else {
+#ifdef _WIN32
+                send(clientFd, response.c_str(), static_cast<int>(response.size()), 0);
+#else
+                send(clientFd, response.c_str(), static_cast<int>(response.size()), 0);
+#endif
+            }
+
+            // If the request resulted in a login/registration, store the user ID.
             if (!userId.empty()) {
                 currentUserId = userId;
                 std::lock_guard<std::mutex> lock(m_user_sockets_mutex);
@@ -170,13 +215,13 @@ void TestServer::clientHandler(int clientFd) {
         }
     }
 
-    // Клиент отключился: убираем его из онлайн-списка и обновляем БД
+    // Client disconnected: remove from the online list and clear the is_online flag in the database.
     if (!currentUserId.empty()) {
         std::lock_guard<std::mutex> lock(m_user_sockets_mutex);
         auto it = m_user_sockets.find(currentUserId);
         if (it != m_user_sockets.end() && it->second == clientFd) {
             m_user_sockets.erase(it);
-            // Сбрасываем флаг is_online в базе
+            // Reset the online status in the database.
             const char* sql = "UPDATE users SET is_online = 0 WHERE id = ?;";
             sqlite3_stmt* stmt;
             if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
@@ -187,6 +232,13 @@ void TestServer::clientHandler(int clientFd) {
         }
     }
 
+    // Perform an orderly SSL shutdown and free resources.
+    if (ssl) {
+        SSL_shutdown(ssl);
+        SSL_free(ssl);
+    }
+
+    // Close the underlying socket.
 #ifdef _WIN32
     closesocket(clientFd);
 #else
