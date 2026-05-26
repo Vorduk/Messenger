@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "StyleManager.h"
 #include "StyleManager.h"
 #include "StyleManager.h"

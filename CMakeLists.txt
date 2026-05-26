@@ -73,9 +73,7 @@ if(NOT EXISTS "${JSON_INCLUDE_DIR}/json.hpp")
     message(FATAL_ERROR "json.hpp not found in ${JSON_INCLUDE_DIR}. Please copy single_include/nlohmann/json.hpp there.")
 endif()
 
-# -------------------------------------------------------------------
-# Поиск OpenSSL с автоматическим обнаружением
-# -------------------------------------------------------------------
+# Search for OpenSSL with automatic detection.
 if(WIN32)
     set(OPENSSL_ROOT_DIR "" CACHE PATH "Root directory of OpenSSL installation")
 endif()
@@ -84,51 +82,41 @@ find_package(OpenSSL REQUIRED)
 add_compile_definitions(OPENSSL_FOUND)
 message(STATUS "OpenSSL found: ${OPENSSL_INCLUDE_DIR}")
 
-# -------------------------------------------------------------------
-# Precompiled headers configuration
-# -------------------------------------------------------------------
+# Precompiled headers configuration.
 set(PCH_HEADER "${CMAKE_SOURCE_DIR}/Common/pch.h")
-set(PCH_SOURCE "${CMAKE_SOURCE_DIR}/Common/pch.cpp")  # Optional: create an empty .cpp file
+set(PCH_SOURCE "${CMAKE_SOURCE_DIR}/Common/pch.cpp")
 
-# Create empty pch.cpp if it doesn't exist (for MSVC compatibility)
+# Create empty pch.cpp if it does not exist for MSVC compatibility.
 if(NOT EXISTS "${PCH_SOURCE}")
     file(WRITE "${PCH_SOURCE}" "#include \"pch.h\"\n")
 endif()
 
-# Function to enable precompiled headers for a target
+# Function to enable precompiled headers for a target.
 function(enable_pch TARGET_NAME)
     if(MSVC)
-        # Visual Studio: /Yc for pch.cpp, /Yu for all other files
         target_precompile_headers(${TARGET_NAME} PRIVATE ${PCH_HEADER})
     elseif(CMAKE_COMPILER_IS_GNUCXX OR MINGW)
-        # GCC/MinGW: Use -include flag to force include
         target_precompile_headers(${TARGET_NAME} PRIVATE ${PCH_HEADER})
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-        # Clang: Native PCH support
         target_precompile_headers(${TARGET_NAME} PRIVATE ${PCH_HEADER})
     endif()
     
-    # Add PCH directory to includes
     target_include_directories(${TARGET_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/Common)
 endfunction()
 
-# Function to add precompiled headers to a target with more control
+# Function to add precompiled headers to a target with more control.
 function(target_add_pch TARGET_NAME PCH_FILE)
     get_filename_component(PCH_DIR ${PCH_FILE} DIRECTORY)
     
     if(MSVC)
-        # MSVC approach: use target_precompile_headers
         target_precompile_headers(${TARGET_NAME} PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:${PCH_FILE}>")
         target_include_directories(${TARGET_NAME} PRIVATE ${PCH_DIR})
     elseif(MINGW OR CMAKE_COMPILER_IS_GNUCXX)
-        # GCC/MinGW approach: compile PCH separately and use it
         get_filename_component(PCH_NAME ${PCH_FILE} NAME_WE)
         set(PCH_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${PCH_NAME}.h.gch")
         
-        # Create directory for PCH output
         file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
         
-        # Custom command to build PCH
         add_custom_command(
             OUTPUT ${PCH_OUTPUT}
             COMMAND ${CMAKE_CXX_COMPILER} 
@@ -143,20 +131,16 @@ function(target_add_pch TARGET_NAME PCH_FILE)
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         )
         
-        # Create custom target for PCH
         add_custom_target(${TARGET_NAME}_pch DEPENDS ${PCH_OUTPUT})
         add_dependencies(${TARGET_NAME} ${TARGET_NAME}_pch)
         
-        # Add include path for PCH
         target_include_directories(${TARGET_NAME} PRIVATE ${PCH_DIR} ${CMAKE_CURRENT_BINARY_DIR})
         
-        # Force all source files to depend on PCH
         target_compile_options(${TARGET_NAME} PRIVATE 
             -include ${PCH_DIR}/${PCH_NAME}.h
             -Winvalid-pch
         )
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-        # Clang: Native PCH support similar to MSVC
         target_precompile_headers(${TARGET_NAME} PRIVATE ${PCH_FILE})
         target_include_directories(${TARGET_NAME} PRIVATE ${PCH_DIR})
     endif()
@@ -178,12 +162,11 @@ function(auto_add_executable TARGET_NAME)
     )
     target_compile_definitions(Client PRIVATE GLEW_STATIC)
     
-    # Enable precompiled headers for this target
     enable_pch(${TARGET_NAME})
     
     if(WIN32)
         target_link_libraries(${TARGET_NAME} PRIVATE ws2_32)
-                if(MSVC)
+        if(MSVC)
             add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different
                     "$<TARGET_RUNTIME_DLLS:${TARGET_NAME}>"
@@ -212,7 +195,6 @@ function(auto_add_library TARGET_NAME)
         OpenSSL::SSL OpenSSL::Crypto
     )
     
-    # Enable precompiled headers for this target
     enable_pch(${TARGET_NAME})
     
     if(WIN32)
@@ -242,7 +224,6 @@ add_subdirectory(Client)
 add_subdirectory(Server)
 
 message(STATUS "")
-message(STATUS "========================================")
 message(STATUS "Messenger v${PROJECT_VERSION}")
 message(STATUS "Platform: ${CMAKE_SYSTEM_NAME}")
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
@@ -256,5 +237,4 @@ message(STATUS "OpenGL: ${OPENGL_INCLUDE_DIR}")
 message(STATUS "OpenSSL include: ${OPENSSL_INCLUDE_DIR}")
 message(STATUS "GLEW: ${CMAKE_CURRENT_SOURCE_DIR}/extern/glew")
 message(STATUS "Precompiled header: ${PCH_HEADER}")
-message(STATUS "========================================")
 message(STATUS "")

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "DockableWindowsManager.h"
 #include "imgui_internal.h"
 #include <fstream>

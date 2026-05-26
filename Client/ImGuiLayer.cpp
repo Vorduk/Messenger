@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "ImGuiLayer.h"
 
 ImGuiLayer::ImGuiLayer(Window& window) : m_window(window) {

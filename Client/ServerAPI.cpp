@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "ServerAPI.h"
 #include "AsyncNetworkClient.h"
 #include <json.hpp>

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "SQLiteMessageRepository.h"
 #include <cstdio>
 #include <chrono>

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "ChatWindow.h"
 #include "imgui.h"
 #include <cstring>

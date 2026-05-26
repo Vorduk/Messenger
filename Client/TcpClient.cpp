@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "TcpClient.h"
 #include <iostream>
 #include <cstring>

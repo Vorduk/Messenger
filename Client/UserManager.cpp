@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "UserManager.h"
 #include "LogMacros.h"
 #include "UUIDGenerator.h"

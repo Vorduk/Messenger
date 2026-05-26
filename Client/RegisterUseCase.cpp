@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "RegisterUseCase.h"
 
 RegisterUseCase::RegisterUseCase(IServerAPI& api) : m_api(api) {}

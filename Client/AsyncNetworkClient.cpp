@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "AsyncNetworkClient.h"
 #include "TcpClient.h"
 #include "LogMacros.h"

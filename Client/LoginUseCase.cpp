@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "LoginUseCase.h"
 
 LoginUseCase::LoginUseCase(IServerAPI& api) : m_api(api) {}

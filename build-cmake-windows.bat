@@ -16,18 +16,12 @@ if not "%1"=="" (
 echo Build configuration: %CONFIG%
 echo.
 
-if exist %BUILD_DIR% (
-    echo Removing existing build directory...
-    rmdir /s /q %BUILD_DIR%
+:: Only create build directory if it does not exist.
+if not exist %BUILD_DIR% (
+    echo Creating build directory...
+    mkdir %BUILD_DIR%
 )
 
-if exist bin (
-    echo Removing bin directory...
-    rmdir /s /q bin
-)
-
-echo Creating build directory...
-mkdir %BUILD_DIR%
 cd %BUILD_DIR%
 
 echo Detecting available generator...
@@ -62,8 +56,14 @@ if "%GENERATOR%"=="" (
 echo Using generator: %GENERATOR% %PLATFORM%
 echo.
 
-echo Configuring CMake...
-cmake .. -G "%GENERATOR%" %PLATFORM% -DCMAKE_BUILD_TYPE=%CONFIG%
+:: Check if CMake cache exists to avoid reconfiguration.
+if not exist CMakeCache.txt (
+    echo Configuring CMake...
+    cmake .. -G "%GENERATOR%" %PLATFORM% -DCMAKE_BUILD_TYPE=%CONFIG%
+) else (
+    echo CMake already configured, skipping configuration.
+    echo Use clean.bat to force full rebuild.
+)
 
 if errorlevel 1 (
     echo.
