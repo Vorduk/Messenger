@@ -13,6 +13,7 @@ StyleManager& StyleManager::getInstance()
 StyleManager::StyleManager() {
     setChatListWindowStyle();
     setChatWindowStyle();
+    setLoginWindowStyle();
 }
 
 const ChatListWindowStyle& StyleManager::getChatListWindowStyle() const
@@ -23,6 +24,11 @@ const ChatListWindowStyle& StyleManager::getChatListWindowStyle() const
 const ChatWindowStyle& StyleManager::getChatWindowStyle() const
 {
     return m_chat_window_style;
+}
+
+const LoginWindowStyle& StyleManager::getLoginWindowStyle() const
+{
+    return m_login_window_style;
 }
 
 void StyleManager::setChatListWindowStyle()
@@ -235,6 +241,77 @@ void StyleManager::setChatWindowStyle()
 
     m_chat_window_style.chat_header_prefix = "Chat with ";
 
+}
+
+void StyleManager::setLoginWindowStyle()
+{
+    // Title
+    m_login_window_style.title_text_style.color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+    m_login_window_style.title_text_style.font_size = 24.0f;
+    m_login_window_style.title_text_style.bold = true;
+    m_login_window_style.title_text_style.alignment = ImVec2(0.5f, 0.5f);
+
+    m_login_window_style.window_bg_color = ImVec4(0.12f, 0.12f, 0.13f, 1.0f);
+    m_login_window_style.fields_max_width = 320.0f;
+
+    // Tabs
+    m_login_window_style.login_tab_text = "Login";
+    m_login_window_style.register_tab_text = "Register";
+    m_login_window_style.tab_text_style.color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+    m_login_window_style.tab_text_style.font_size = 16.0f;
+    m_login_window_style.tab_text_style.bold = false;
+    m_login_window_style.tab_text_style.alignment = ImVec2(0.5f, 0.5f);
+    m_login_window_style.tab_button_color = ImVec4(0.2f, 0.2f, 0.22f, 1.0f);
+    m_login_window_style.tab_button_hover_color = ImVec4(0.3f, 0.3f, 0.33f, 1.0f);
+    m_login_window_style.tab_active_color = ImVec4(0.27f, 0.51f, 0.78f, 1.0f);
+
+    // Input fields
+    m_login_window_style.input_rounding = 6.0f;
+    m_login_window_style.input_frame_padding = 8.0f;
+    m_login_window_style.input_bg_color = ImVec4(0.16f, 0.16f, 0.18f, 1.0f);
+    m_login_window_style.input_border_color = ImVec4(0.4f, 0.4f, 0.4f, 1.0f);
+    m_login_window_style.input_border_width = 1.0f;
+    m_login_window_style.hint_text_style.color = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
+    m_login_window_style.hint_text_style.font_size = 14.0f;
+    m_login_window_style.hint_text_style.bold = false;
+    m_login_window_style.hint_text_style.alignment = ImVec2(0.0f, 0.5f);
+    m_login_window_style.input_text_style.color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+    m_login_window_style.input_text_style.font_size = 14.0f;
+    m_login_window_style.input_text_style.bold = false;
+    m_login_window_style.input_text_style.alignment = ImVec2(0.0f, 0.5f);
+
+    // Buttons
+    m_login_window_style.login_button_text = "Login";
+    m_login_window_style.register_button_text = "Register";
+    m_login_window_style.button_text_style.color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+    m_login_window_style.button_text_style.font_size = 14.0f;
+    m_login_window_style.button_text_style.bold = false;
+    m_login_window_style.button_text_style.alignment = ImVec2(0.5f, 0.5f);
+    m_login_window_style.button_color = ImVec4(0.27f, 0.51f, 0.78f, 1.0f);
+    m_login_window_style.button_hover_color = ImVec4(0.35f, 0.61f, 0.88f, 1.0f);
+    m_login_window_style.button_active_color = ImVec4(0.2f, 0.4f, 0.6f, 1.0f);
+    m_login_window_style.button_rounding = 6.0f;
+
+    // Error
+    m_login_window_style.error_text_style.color = ImVec4(1.0f, 0.3f, 0.3f, 1.0f);
+    m_login_window_style.error_text_style.font_size = 13.0f;
+    m_login_window_style.error_text_style.bold = false;
+    m_login_window_style.error_text_style.alignment = ImVec2(0.5f, 0.5f);
+    m_login_window_style.error_text_color = ImVec4(1.0f, 0.3f, 0.3f, 1.0f);
+
+    // Waiting state
+    m_login_window_style.waiting_text = "Connecting to server...";
+    m_login_window_style.waiting_text_style.color = ImVec4(0.7f, 0.7f, 0.7f, 1.0f);
+    m_login_window_style.waiting_text_style.font_size = 14.0f;
+    m_login_window_style.waiting_text_style.bold = false;
+    m_login_window_style.waiting_text_style.alignment = ImVec2(0.5f, 0.5f);
+
+    // Validation messages
+    m_login_window_style.error_username_empty_text = "Username cannot be empty";
+    m_login_window_style.error_username_invalid_text = "Only English letters and digits allowed";
+    m_login_window_style.error_display_name_empty_text = "Display name cannot be empty";
+    m_login_window_style.error_birthday_empty_text = "Birthday cannot be empty";
+    m_login_window_style.error_birthday_invalid_text = "Invalid date";
 }
 
 

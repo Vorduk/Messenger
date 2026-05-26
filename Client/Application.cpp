@@ -21,11 +21,16 @@ Application::Application(int window_width, int window_height, const std::string&
     m_get_users_uc = std::make_unique<GetUsersUseCase>(m_server_api);
     // m_send_uc will be created after login
 
+    StyleManager& style_manager = StyleManager::getInstance();
+
     // Login window
-    m_login_window = std::make_unique<LoginWindow>(*m_login_uc, *m_register_uc,
+    m_login_window = std::make_unique<LoginWindow>(
+        style_manager.getLoginWindowStyle(),
+        *m_login_uc, *m_register_uc,
         [this](const std::string& user_id, const std::string& username, const std::string& display_name) {
             onUserLoggedIn(user_id, username, display_name);
-        });
+        }
+    );
     m_dock_manager.addWindow(m_login_window.get());
     using Node = DockLayoutNode;
     m_dock_manager.setCurrentLayout(Node::makeWindow("Login"));

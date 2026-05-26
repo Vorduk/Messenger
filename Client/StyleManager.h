@@ -126,6 +126,57 @@ struct ChatWindowStyle {
 };
 
 /**
+ * @brief All style settings used by the login/register window.
+ */
+struct LoginWindowStyle {
+    // Common
+    TextStyle title_text_style;      
+    ImVec4 window_bg_color;          
+    float fields_max_width;          
+
+    // Tabs
+    std::string login_tab_text;      
+    std::string register_tab_text;   
+    TextStyle tab_text_style;        
+    ImVec4 tab_button_color;         
+    ImVec4 tab_button_hover_color;   
+    ImVec4 tab_active_color;         
+
+    // Input fields
+    float input_rounding;            
+    float input_frame_padding;       
+    ImVec4 input_bg_color;           
+    ImVec4 input_border_color;       
+    float input_border_width;        
+    TextStyle hint_text_style;       
+    TextStyle input_text_style;      
+
+    // Buttons
+    std::string login_button_text;   
+    std::string register_button_text;
+    TextStyle button_text_style;     
+    ImVec4 button_color;             
+    ImVec4 button_hover_color;       
+    ImVec4 button_active_color;      
+    float button_rounding;           
+
+    // Error message
+    TextStyle error_text_style;      
+    ImVec4 error_text_color;         
+
+    // Waiting state
+    std::string waiting_text;        
+    TextStyle waiting_text_style;    
+
+    // Validation error strings
+    std::string error_username_empty_text;    
+    std::string error_username_invalid_text;
+    std::string error_display_name_empty_text;
+    std::string error_birthday_empty_text;
+    std::string error_birthday_invalid_text;
+};
+
+/**
  * @brief Singleton manager that provides UI styles.
  * 
  * getChatListWindowStyle() and other style getters: The returned reference refers to the manager's
@@ -139,9 +190,8 @@ public:
     // Get style reference for particular window.
     const ChatListWindowStyle& getChatListWindowStyle() const;
     const ChatWindowStyle& getChatWindowStyle() const;
-    //const ChatListWindowStyle& getLoginWindowStyle() const; // todo
+    const LoginWindowStyle& getLoginWindowStyle() const;
     
-
 private:
     StyleManager();
     ~StyleManager() = default;
@@ -151,9 +201,10 @@ private:
     // Fill the windows style structures.
     void setChatListWindowStyle();
     void setChatWindowStyle();
-    // // void setLoginWindowStyle(); // todo
+    void setLoginWindowStyle();
 
     // All windows styles stored here.
     ChatListWindowStyle m_chat_list_window_style;
     ChatWindowStyle m_chat_window_style;
+    LoginWindowStyle m_login_window_style;
 };
