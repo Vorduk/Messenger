@@ -100,4 +100,5 @@ if "%GENERATOR%"=="Ninja" (
 )
 echo.
 
+pause
 cd ..
