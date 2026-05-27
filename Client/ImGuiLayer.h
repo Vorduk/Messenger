@@ -18,6 +18,8 @@ public:
     void beginFrame();
     void endFrame();
 
+    void SetupFonts();
+
 private:
     Window& m_window; ///< Glfw window wrapper.
 };
