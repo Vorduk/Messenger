@@ -1,13 +1,6 @@
 sudo apt update
-
-if ! command -v openssl &> /dev/null; then
-    echo "OpenSSL not found. Installing..."
-    sudo apt install -y openssl libssl-dev
-else
-    echo "OpenSSL already installed"
-fi
-
 mkdir build && cd build
 sudo apt install -y libgl1-mesa-dev libglu1-mesa-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
-cmake ..
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake --build .
 make -j$(nproc)
