@@ -37,6 +37,12 @@ public:
 	void setTimeouts(int send_timeout_ms, int recv_timeout_ms);
 	void disconnect();
 
+	/**
+	 * @brief Attempt to reconnect to the server using saved address/port/TLS settings.
+	 * @return true if reconnection succeeded.
+	 */
+	bool tryReconnect();
+
 	// Turn on TLS-encryption (Call before connectToServer)
 	void enableTls();
 

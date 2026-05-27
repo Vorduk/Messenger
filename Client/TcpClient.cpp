@@ -200,6 +200,30 @@ void TcpClient::disconnect() {
     closeSocket();
 }
 
+bool TcpClient::tryReconnect() {
+    // Clean up any previous connection state
+    if (m_ssl) {
+        SSL_shutdown(m_ssl);
+        SSL_free(m_ssl);
+        m_ssl = nullptr;
+    }
+    closeSocket();
+    m_is_server_connected = false;
+    m_leftover_buffer.clear();
+
+    // Re-create the TLS context if needed
+    if (m_use_tls) {
+        // SSL_CTX can be reused, but we may need to re-create if it was freed
+        if (!m_ssl_ctx) {
+            m_ssl_ctx = SSL_CTX_new(TLS_client_method());
+            SSL_CTX_set_verify(m_ssl_ctx, SSL_VERIFY_NONE, nullptr);
+        }
+    }
+
+    // Attempt a full reconnection
+    return connectToServer();
+}
+
 void TcpClient::enableTls() {
     m_use_tls = true;
     m_ssl_ctx = SSL_CTX_new(TLS_client_method());

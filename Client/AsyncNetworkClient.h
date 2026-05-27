@@ -42,7 +42,15 @@ public:
 
     using ReconnectCallback = std::function<void()>; ///< Called after successful reconnection
 
-    AsyncNetworkClient(const std::string& server_address, int port, bool use_tls = true);
+    /**
+     * @brief Construct the async network client.
+     * @param server_address Server IP or hostname.
+     * @param port Server port.
+     * @param use_tls Enable TLS encryption.
+     * @param auto_reconnect If true, automatically try to reconnect on disconnect.
+     * @param reconnect_interval_ms Milliseconds between reconnection attempts.
+     */
+    AsyncNetworkClient(const std::string& server_address, int port, bool use_tls = false, bool auto_reconnect = true, int reconnect_interval_ms = 3000);
     ~AsyncNetworkClient();
 
     /**
@@ -79,6 +87,11 @@ public:
     // Enable tls.
     void enableTls();
 
+    /**
+     * @brief Manually trigger a reconnection attempt (useful after network recovery).
+     */
+    void tryReconnect();
+
 private:
     /**
      * @brief Main function executed by the worker thread.
@@ -89,9 +102,16 @@ private:
      */
     void workerLoop();
 
+    /**
+     * @brief Background thread for automatic reconnection
+     */
+    void reconnectLoop();           
+
     std::unique_ptr<TcpClient> m_client;    ///< Blocking TCP client.
     std::string m_server_address;           ///< Server address.
     int m_port;                             ///< Port.
+    // Tls.
+    bool m_use_tls;
 
     /**
      * @brief A queued request waiting to be sent.
@@ -111,11 +131,18 @@ private:
     std::mutex m_callback_mutex;                            ///< Mutex protecting m_pending_callbacks.
     ReconnectCallback m_reconnect_callback;                 ///< Called when reconnection succeeds
 
+    // Reconnection mechanism
+    bool m_auto_reconnect;
+    int m_reconnect_interval_ms;
+    std::thread m_reconnect_thread;
+    std::atomic<bool> m_reconnect_in_progress{ false };
+    std::atomic<bool> m_should_reconnect{ true };
+    std::mutex m_reconnect_mutex;
+    std::condition_variable m_reconnect_cv;
+
     /**
      * @brief Processes a single request from the front of the queue.
      */
     void processQueue(Request request);
-
-    // Tls.
-    bool m_use_tls;
+  
 };
