@@ -108,6 +108,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a9848295776a90b6de6acd2e32f69c7c5" id="r_a9848295776a90b6de6acd2e32f69c7c5"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a9848295776a90b6de6acd2e32f69c7c5">isConnected</a> () const</td></tr>
 <tr class="memitem:ae47e75a7f5e53c57ffe2d4ac5132e24f" id="r_ae47e75a7f5e53c57ffe2d4ac5132e24f"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ae47e75a7f5e53c57ffe2d4ac5132e24f">setTimeouts</a> (int send_timeout_ms, int recv_timeout_ms)</td></tr>
 <tr class="memitem:a0b7b3ecc473a0621902693414bd5d8c8" id="r_a0b7b3ecc473a0621902693414bd5d8c8"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a0b7b3ecc473a0621902693414bd5d8c8">disconnect</a> ()</td></tr>
+<tr class="memitem:a947cabc267431e05dc50dd418bd50304" id="r_a947cabc267431e05dc50dd418bd50304"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a947cabc267431e05dc50dd418bd50304">tryReconnect</a> ()</td></tr>
+<tr class="memdesc:a947cabc267431e05dc50dd418bd50304"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempt to reconnect to the server using saved address/port/TLS settings.  <br /></td></tr>
 <tr class="memitem:a380474fdefb52ca29786366515c65bde" id="r_a380474fdefb52ca29786366515c65bde"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a380474fdefb52ca29786366515c65bde">enableTls</a> ()</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
@@ -283,13 +285,13 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_tcp_client_8cpp_source.html#l00203">203</a> of file <a class="el" href="_tcp_client_8cpp_source.html">TcpClient.cpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">  203</span>                          {</div>
-<div class="line"><span class="lineno">  204</span>    m_use_tls = <span class="keyword">true</span>;</div>
-<div class="line"><span class="lineno">  205</span>    m_ssl_ctx = SSL_CTX_new(TLS_client_method());</div>
-<div class="line"><span class="lineno">  206</span>    <span class="comment">// For development only – accept any certificate.</span></div>
-<div class="line"><span class="lineno">  207</span>    SSL_CTX_set_verify(m_ssl_ctx, SSL_VERIFY_NONE, <span class="keyword">nullptr</span>);</div>
-<div class="line"><span class="lineno">  208</span>}</div>
+<p class="definition">Definition at line <a class="el" href="_tcp_client_8cpp_source.html#l00227">227</a> of file <a class="el" href="_tcp_client_8cpp_source.html">TcpClient.cpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  227</span>                          {</div>
+<div class="line"><span class="lineno">  228</span>    m_use_tls = <span class="keyword">true</span>;</div>
+<div class="line"><span class="lineno">  229</span>    m_ssl_ctx = SSL_CTX_new(TLS_client_method());</div>
+<div class="line"><span class="lineno">  230</span>    <span class="comment">// For development only – accept any certificate.</span></div>
+<div class="line"><span class="lineno">  231</span>    SSL_CTX_set_verify(m_ssl_ctx, SSL_VERIFY_NONE, <span class="keyword">nullptr</span>);</div>
+<div class="line"><span class="lineno">  232</span>}</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -468,6 +470,52 @@ Public Member Functions</h2></td></tr>
 <div class="line"><span class="lineno">  194</span>        m_has_timeouts = <span class="keyword">true</span>;</div>
 <div class="line"><span class="lineno">  195</span>    }</div>
 <div class="line"><span class="lineno">  196</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a947cabc267431e05dc50dd418bd50304" name="a947cabc267431e05dc50dd418bd50304"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a947cabc267431e05dc50dd418bd50304">&#9670;&#160;</a></span>tryReconnect()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool TcpClient::tryReconnect </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Attempt to reconnect to the server using saved address/port/TLS settings. </p>
+<dl class="section return"><dt>Returns</dt><dd>true if reconnection succeeded. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="_tcp_client_8cpp_source.html#l00203">203</a> of file <a class="el" href="_tcp_client_8cpp_source.html">TcpClient.cpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  203</span>                             {</div>
+<div class="line"><span class="lineno">  204</span>    <span class="comment">// Clean up any previous connection state</span></div>
+<div class="line"><span class="lineno">  205</span>    <span class="keywordflow">if</span> (m_ssl) {</div>
+<div class="line"><span class="lineno">  206</span>        SSL_shutdown(m_ssl);</div>
+<div class="line"><span class="lineno">  207</span>        SSL_free(m_ssl);</div>
+<div class="line"><span class="lineno">  208</span>        m_ssl = <span class="keyword">nullptr</span>;</div>
+<div class="line"><span class="lineno">  209</span>    }</div>
+<div class="line"><span class="lineno">  210</span>    closeSocket();</div>
+<div class="line"><span class="lineno">  211</span>    m_is_server_connected = <span class="keyword">false</span>;</div>
+<div class="line"><span class="lineno">  212</span>    m_leftover_buffer.clear();</div>
+<div class="line"><span class="lineno">  213</span> </div>
+<div class="line"><span class="lineno">  214</span>    <span class="comment">// Re-create the TLS context if needed</span></div>
+<div class="line"><span class="lineno">  215</span>    <span class="keywordflow">if</span> (m_use_tls) {</div>
+<div class="line"><span class="lineno">  216</span>        <span class="comment">// SSL_CTX can be reused, but we may need to re-create if it was freed</span></div>
+<div class="line"><span class="lineno">  217</span>        <span class="keywordflow">if</span> (!m_ssl_ctx) {</div>
+<div class="line"><span class="lineno">  218</span>            m_ssl_ctx = SSL_CTX_new(TLS_client_method());</div>
+<div class="line"><span class="lineno">  219</span>            SSL_CTX_set_verify(m_ssl_ctx, SSL_VERIFY_NONE, <span class="keyword">nullptr</span>);</div>
+<div class="line"><span class="lineno">  220</span>        }</div>
+<div class="line"><span class="lineno">  221</span>    }</div>
+<div class="line"><span class="lineno">  222</span> </div>
+<div class="line"><span class="lineno">  223</span>    <span class="comment">// Attempt a full reconnection</span></div>
+<div class="line"><span class="lineno">  224</span>    <span class="keywordflow">return</span> <a class="code hl_function" href="#a5fce4fdd32ec92939799ca6f9b633449">connectToServer</a>();</div>
+<div class="line"><span class="lineno">  225</span>}</div>
+<div class="ttc" id="aclass_tcp_client_html_a5fce4fdd32ec92939799ca6f9b633449"><div class="ttname"><a href="#a5fce4fdd32ec92939799ca6f9b633449">TcpClient::connectToServer</a></div><div class="ttdeci">bool connectToServer()</div><div class="ttdoc">Opens a blocking TCP connection to the server.</div><div class="ttdef"><b>Definition</b> <a href="_tcp_client_8cpp_source.html#l00042">TcpClient.cpp:42</a></div></div>
 </div><!-- fragment -->
 </div>
 </div>

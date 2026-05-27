@@ -100,6 +100,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:afed87eb2606daac4fdb569cdeb7a69ad" id="r_afed87eb2606daac4fdb569cdeb7a69ad"><td class="memItemLeft">&#160;</td><td class="memItemRight"><a class="el" href="#afed87eb2606daac4fdb569cdeb7a69ad">ImGuiLayer</a> (<a class="el" href="class_window.html">Window</a> &amp;window)</td></tr>
 <tr class="memitem:ab09bd1c6bccc9c727d0fbd10a0b63125" id="r_ab09bd1c6bccc9c727d0fbd10a0b63125"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ab09bd1c6bccc9c727d0fbd10a0b63125">beginFrame</a> ()</td></tr>
 <tr class="memitem:adc7e7927b5594543b8f079b68b938f3a" id="r_adc7e7927b5594543b8f079b68b938f3a"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#adc7e7927b5594543b8f079b68b938f3a">endFrame</a> ()</td></tr>
+<tr class="memitem:aeb29929572afac129005aa9d575cbaf5" id="r_aeb29929572afac129005aa9d575cbaf5"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aeb29929572afac129005aa9d575cbaf5">SetupFonts</a> ()</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Wrapper for ImGui context and rendering lifecycle tied to a GLFW window. Initializes ImGui with GLFW and OpenGL3 backends, manages frame begin/end, and handles optional multi-viewport platform window updates. </p>
@@ -131,12 +132,14 @@ Public Member Functions</h2></td></tr>
 <div class="line"><span class="lineno">   10</span>    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;   <span class="comment">// Enable keyboard navigation.</span></div>
 <div class="line"><span class="lineno">   11</span>    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;       <span class="comment">// Enable docking.</span></div>
 <div class="line"><span class="lineno">   12</span>    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;     <span class="comment">// Enable multiple windows.</span></div>
-<div class="line"><span class="lineno">   13</span>    </div>
+<div class="line"><span class="lineno">   13</span> </div>
 <div class="line"><span class="lineno">   14</span>    ImGui::StyleColorsDark();   <span class="comment">// Dark theme for default.</span></div>
 <div class="line"><span class="lineno">   15</span> </div>
-<div class="line"><span class="lineno">   16</span>    ImGui_ImplGlfw_InitForOpenGL(m_window.getHandle(), <span class="keyword">true</span>);   <span class="comment">// Synchronize with Glfw.</span></div>
-<div class="line"><span class="lineno">   17</span>    ImGui_ImplOpenGL3_Init(<span class="stringliteral">&quot;#version 330&quot;</span>);                     <span class="comment">// OpenGL version.</span></div>
-<div class="line"><span class="lineno">   18</span>}</div>
+<div class="line"><span class="lineno">   16</span>    SetupFonts();</div>
+<div class="line"><span class="lineno">   17</span> </div>
+<div class="line"><span class="lineno">   18</span>    ImGui_ImplGlfw_InitForOpenGL(m_window.getHandle(), <span class="keyword">true</span>);   <span class="comment">// Synchronize with Glfw.</span></div>
+<div class="line"><span class="lineno">   19</span>    ImGui_ImplOpenGL3_Init(<span class="stringliteral">&quot;#version 330&quot;</span>);                     <span class="comment">// OpenGL version.</span></div>
+<div class="line"><span class="lineno">   20</span>}</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -155,13 +158,13 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_im_gui_layer_8cpp_source.html#l00020">20</a> of file <a class="el" href="_im_gui_layer_8cpp_source.html">ImGuiLayer.cpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   20</span>                        {</div>
-<div class="line"><span class="lineno">   21</span>    <span class="comment">// Shutdown everything and destroy context.</span></div>
-<div class="line"><span class="lineno">   22</span>    ImGui_ImplOpenGL3_Shutdown();</div>
-<div class="line"><span class="lineno">   23</span>    ImGui_ImplGlfw_Shutdown();</div>
-<div class="line"><span class="lineno">   24</span>    ImGui::DestroyContext();</div>
-<div class="line"><span class="lineno">   25</span>}</div>
+<p class="definition">Definition at line <a class="el" href="_im_gui_layer_8cpp_source.html#l00022">22</a> of file <a class="el" href="_im_gui_layer_8cpp_source.html">ImGuiLayer.cpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   22</span>                        {</div>
+<div class="line"><span class="lineno">   23</span>    <span class="comment">// Shutdown everything and destroy context.</span></div>
+<div class="line"><span class="lineno">   24</span>    ImGui_ImplOpenGL3_Shutdown();</div>
+<div class="line"><span class="lineno">   25</span>    ImGui_ImplGlfw_Shutdown();</div>
+<div class="line"><span class="lineno">   26</span>    ImGui::DestroyContext();</div>
+<div class="line"><span class="lineno">   27</span>}</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -181,13 +184,13 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_im_gui_layer_8cpp_source.html#l00027">27</a> of file <a class="el" href="_im_gui_layer_8cpp_source.html">ImGuiLayer.cpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   27</span>                            {</div>
-<div class="line"><span class="lineno">   28</span>    <span class="comment">// New frame for opengl, glfw, imgui.</span></div>
-<div class="line"><span class="lineno">   29</span>    ImGui_ImplOpenGL3_NewFrame();</div>
-<div class="line"><span class="lineno">   30</span>    ImGui_ImplGlfw_NewFrame();</div>
-<div class="line"><span class="lineno">   31</span>    ImGui::NewFrame();</div>
-<div class="line"><span class="lineno">   32</span>}</div>
+<p class="definition">Definition at line <a class="el" href="_im_gui_layer_8cpp_source.html#l00029">29</a> of file <a class="el" href="_im_gui_layer_8cpp_source.html">ImGuiLayer.cpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   29</span>                            {</div>
+<div class="line"><span class="lineno">   30</span>    <span class="comment">// New frame for opengl, glfw, imgui.</span></div>
+<div class="line"><span class="lineno">   31</span>    ImGui_ImplOpenGL3_NewFrame();</div>
+<div class="line"><span class="lineno">   32</span>    ImGui_ImplGlfw_NewFrame();</div>
+<div class="line"><span class="lineno">   33</span>    ImGui::NewFrame();</div>
+<div class="line"><span class="lineno">   34</span>}</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -206,20 +209,71 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_im_gui_layer_8cpp_source.html#l00034">34</a> of file <a class="el" href="_im_gui_layer_8cpp_source.html">ImGuiLayer.cpp</a>.</p>
-<div class="fragment"><div class="line"><span class="lineno">   34</span>                          {</div>
-<div class="line"><span class="lineno">   35</span>    ImGui::Render();</div>
-<div class="line"><span class="lineno">   36</span>    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());</div>
-<div class="line"><span class="lineno">   37</span> </div>
-<div class="line"><span class="lineno">   38</span>    <span class="comment">// Update secondary windows. Essential for working viewport.</span></div>
-<div class="line"><span class="lineno">   39</span>    ImGuiIO&amp; io = ImGui::GetIO();</div>
-<div class="line"><span class="lineno">   40</span>    <span class="keywordflow">if</span> (io.ConfigFlags &amp; ImGuiConfigFlags_ViewportsEnable) {</div>
-<div class="line"><span class="lineno">   41</span>        GLFWwindow* backup_current_context = glfwGetCurrentContext();</div>
-<div class="line"><span class="lineno">   42</span>        ImGui::UpdatePlatformWindows();</div>
-<div class="line"><span class="lineno">   43</span>        ImGui::RenderPlatformWindowsDefault();</div>
-<div class="line"><span class="lineno">   44</span>        glfwMakeContextCurrent(backup_current_context);</div>
-<div class="line"><span class="lineno">   45</span>    }</div>
-<div class="line"><span class="lineno">   46</span>}</div>
+<p class="definition">Definition at line <a class="el" href="_im_gui_layer_8cpp_source.html#l00036">36</a> of file <a class="el" href="_im_gui_layer_8cpp_source.html">ImGuiLayer.cpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   36</span>                          {</div>
+<div class="line"><span class="lineno">   37</span>    ImGui::Render();</div>
+<div class="line"><span class="lineno">   38</span>    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());</div>
+<div class="line"><span class="lineno">   39</span> </div>
+<div class="line"><span class="lineno">   40</span>    <span class="comment">// Update secondary windows. Essential for working viewport.</span></div>
+<div class="line"><span class="lineno">   41</span>    ImGuiIO&amp; io = ImGui::GetIO();</div>
+<div class="line"><span class="lineno">   42</span>    <span class="keywordflow">if</span> (io.ConfigFlags &amp; ImGuiConfigFlags_ViewportsEnable) {</div>
+<div class="line"><span class="lineno">   43</span>        GLFWwindow* backup_current_context = glfwGetCurrentContext();</div>
+<div class="line"><span class="lineno">   44</span>        ImGui::UpdatePlatformWindows();</div>
+<div class="line"><span class="lineno">   45</span>        ImGui::RenderPlatformWindowsDefault();</div>
+<div class="line"><span class="lineno">   46</span>        glfwMakeContextCurrent(backup_current_context);</div>
+<div class="line"><span class="lineno">   47</span>    }</div>
+<div class="line"><span class="lineno">   48</span>}</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="aeb29929572afac129005aa9d575cbaf5" name="aeb29929572afac129005aa9d575cbaf5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeb29929572afac129005aa9d575cbaf5">&#9670;&#160;</a></span>SetupFonts()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ImGuiLayer::SetupFonts </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="_im_gui_layer_8cpp_source.html#l00050">50</a> of file <a class="el" href="_im_gui_layer_8cpp_source.html">ImGuiLayer.cpp</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   50</span>                            {</div>
+<div class="line"><span class="lineno">   51</span>    ImGuiIO&amp; io = ImGui::GetIO();</div>
+<div class="line"><span class="lineno">   52</span> </div>
+<div class="line"><span class="lineno">   53</span>    <span class="comment">// Очищаем стандартные шрифты (опционально)</span></div>
+<div class="line"><span class="lineno">   54</span>    io.Fonts-&gt;Clear();</div>
+<div class="line"><span class="lineno">   55</span> </div>
+<div class="line"><span class="lineno">   56</span>    <span class="comment">// Загружаем шрифт с поддержкой русского языка</span></div>
+<div class="line"><span class="lineno">   57</span>    <span class="comment">// Первый способ: используем arialmt.ttf с указанием диапазона кириллицы</span></div>
+<div class="line"><span class="lineno">   58</span>    ImFontConfig config;</div>
+<div class="line"><span class="lineno">   59</span>    config.OversampleH = 2;</div>
+<div class="line"><span class="lineno">   60</span>    config.OversampleV = 2;</div>
+<div class="line"><span class="lineno">   61</span>    config.PixelSnapH = <span class="keyword">true</span>;</div>
+<div class="line"><span class="lineno">   62</span> </div>
+<div class="line"><span class="lineno">   63</span>    <span class="comment">// Добавляем кириллицу в диапазон символов</span></div>
+<div class="line"><span class="lineno">   64</span>    <span class="keyword">static</span> <span class="keyword">const</span> ImWchar ranges[] = {</div>
+<div class="line"><span class="lineno">   65</span>        0x0020, 0x00FF, <span class="comment">// Basic Latin + Latin Supplement</span></div>
+<div class="line"><span class="lineno">   66</span>        0x0400, 0x04FF, <span class="comment">// Cyrillic</span></div>
+<div class="line"><span class="lineno">   67</span>        0,</div>
+<div class="line"><span class="lineno">   68</span>    };</div>
+<div class="line"><span class="lineno">   69</span> </div>
+<div class="line"><span class="lineno">   70</span>    <span class="comment">// Загружаем ваш шрифт</span></div>
+<div class="line"><span class="lineno">   71</span>    io.Fonts-&gt;AddFontFromFileTTF(<span class="stringliteral">&quot;fonts/ChocolateClassicalSans-Regular.ttf&quot;</span>, 16.0f, &amp;config, ranges);</div>
+<div class="line"><span class="lineno">   72</span> </div>
+<div class="line"><span class="lineno">   73</span>    <span class="comment">// Альтернативный способ: загрузить шрифт по умолчанию и добавить кириллицу</span></div>
+<div class="line"><span class="lineno">   74</span>    <span class="comment">// io.Fonts-&gt;AddFontDefault();</span></div>
+<div class="line"><span class="lineno">   75</span>    <span class="comment">// ImFontConfig config;</span></div>
+<div class="line"><span class="lineno">   76</span>    <span class="comment">// config.MergeMode = true;</span></div>
+<div class="line"><span class="lineno">   77</span>    <span class="comment">// io.Fonts-&gt;AddFontFromFileTTF(&quot;fonts/arialmt.ttf&quot;, 16.0f, &amp;config, io.Fonts-&gt;GetGlyphRangesCyrillic());</span></div>
+<div class="line"><span class="lineno">   78</span> </div>
+<div class="line"><span class="lineno">   79</span>    <span class="comment">// Сборка шрифтов</span></div>
+<div class="line"><span class="lineno">   80</span>    io.Fonts-&gt;Build();</div>
+<div class="line"><span class="lineno">   81</span>}</div>
 </div><!-- fragment -->
 </div>
 </div>
